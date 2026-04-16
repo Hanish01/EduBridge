@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam - Edu Bridge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f1117;
+            color: #f1f3f5;
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
+        }
+        body.result-open { overflow-y: auto; }
+
+        /* Loading */
+        #loading-screen {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 100vh; gap: 16px;
+            color: #868e96; font-size: 1rem;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid #2c2f3e;
+            border-top-color: #4EE0A8;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Intro */
+        #intro-screen {
+            display: none; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 100vh; padding: 32px; text-align: center;
+        }
+        .intro-logo { font-size: 2.5rem; margin-bottom: 16px; }
+        .intro-title { font-size: 2rem; font-weight: 800; margin-bottom: 6px; }
+        .intro-sub { color: #868e96; font-size: 1rem; margin-bottom: 32px; }
+        .intro-rules {
+            background: #1a1d27; border: 1px solid #2c2f3e; border-radius: 16px;
+            padding: 28px 32px; max-width: 520px; width: 100%; text-align: left; margin-bottom: 32px;
+        }
+        .intro-rules h3 { font-size: 0.8rem; font-weight: 700; color: #ff6b35; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; }
+        .rule-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; font-size: 0.9rem; color: #ced4da; }
+        .rule-item:last-child { margin-bottom: 0; }
+        .btn-start {
+            padding: 16px 48px; background: #ff6b35; color: #fff; border: none;
+            border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-start:hover { background: #e55a2b; transform: translateY(-2px); }
+
+        /* Exam */
+        #exam-screen { display: none; flex-direction: column; min-height: 100vh; }
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 32px; background: #1a1d27; border-bottom: 1px solid #2c2f3e; flex-shrink: 0;
+        }
+        .top-bar-left { display: flex; align-items: center; gap: 16px; }
+        .exam-badge { background: #ff6b35; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .exam-name-label { font-size: 0.95rem; font-weight: 600; color: #ced4da; }
+        .top-bar-right { display: flex; align-items: center; gap: 20px; }
+        .violation-count { font-size: 0.8rem; color: #fa5252; font-weight: 600; display: none; }
+        .timer-box {
+            display: flex; align-items: center; gap: 8px; background: #0f1117;
+            border: 1px solid #2c2f3e; border-radius: 8px; padding: 8px 16px;
+            font-size: 1.1rem; font-weight: 800; font-variant-numeric: tabular-nums;
+            min-width: 90px; justify-content: center;
+        }
+        .timer-box.warning { border-color: #fa5252; color: #fa5252; }
+        .timer-dot { width: 8px; height: 8px; border-radius: 50%; background: #4EE0A8; animation: pulse 1s infinite; }
+        .timer-box.warning .timer-dot { background: #fa5252; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .progress-bar-bg { height: 3px; background: #2c2f3e; flex-shrink: 0; }
+        .progress-bar-fill { height: 100%; background: #4EE0A8; transition: width 0.4s ease; }
+        .exam-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 24px; overflow-y: auto; }
+        .question-panel { width: 100%; max-width: 700px; }
+        .q-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .q-counter { font-size: 0.8rem; font-weight: 700; color: #4EE0A8; text-transform: uppercase; letter-spacing: 0.08em; }
+        .q-marks { font-size: 0.8rem; color: #868e96; background: #1a1d27; padding: 4px 10px; border-radius: 6px; }
+        .question-text { font-size: 1.25rem; font-weight: 600; line-height: 1.6; color: #f1f3f5; margin-bottom: 32px; }
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .option-btn {
+            display: flex; align-items: center; gap: 16px; padding: 16px 20px;
+            background: #1a1d27; border: 2px solid #2c2f3e; border-radius: 12px;
+            cursor: pointer; font-size: 0.95rem; font-weight: 500; color: #ced4da;
+            text-align: left; transition: border-color 0.15s, background 0.15s; width: 100%;
+        }
+        .option-btn:hover:not(:disabled) { border-color: #4EE0A8; background: #1e2d2a; color: #f1f3f5; }
+        .option-btn.selected { border-color: #4EE0A8; background: #1a2e28; color: #4EE0A8; }
+        .option-btn:disabled { cursor: default; opacity: 0.7; }
+        .option-letter {
+            width: 32px; height: 32px; border-radius: 8px; background: #0f1117;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: 800; color: #868e96; flex-shrink: 0;
+            transition: background 0.15s, color 0.15s;
+        }
+        .option-btn.selected .option-letter { background: #4EE0A8; color: #0f1117; }
+        .bottom-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 32px; background: #1a1d27; border-top: 1px solid #2c2f3e; flex-shrink: 0;
+        }
+        .warn-msg { font-size: 0.85rem; color: #fa5252; font-weight: 500; min-height: 20px; }
+        .btn-next {
+            padding: 12px 36px; background: #ff6b35; color: #fff; border: none;
+            border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-next:hover { background: #e55a2b; }
+
+        /* Violation overlay */
+        #violation-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+            z-index: 9999; flex-direction: column; align-items: center;
+            justify-content: center; text-align: center; padding: 32px;
+        }
+        .violation-icon { font-size: 3rem; margin-bottom: 16px; }
+        .violation-title { font-size: 1.5rem; font-weight: 800; color: #fa5252; margin-bottom: 8px; }
+        .violation-msg { color: #ced4da; font-size: 0.95rem; margin-bottom: 16px; max-width: 400px; }
+        .violation-remaining { font-size: 0.85rem; color: #868e96; margin-bottom: 24px; }
+        .btn-resume { padding: 12px 32px; background: #ff6b35; color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+
+        /* Result */
+        #result-screen {
+            display: none; flex-direction: column; align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh; padding: 40px 24px;
+            text-align: center; overflow-y: auto; background: #0f1117;
+        }
+        .result-icon { font-size: 4rem; margin-bottom: 16px; }
+        .result-score { font-size: 3.5rem; font-weight: 800; margin-bottom: 6px; }
+        .result-score .score-num { color: #4EE0A8; }
+        .result-pct { font-size: 1rem; color: #868e96; margin-bottom: 32px; }
+        .result-stats { display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; justify-content: center; }
+        .stat-box { background: #1a1d27; border: 1px solid #2c2f3e; border-radius: 12px; padding: 16px 24px; min-width: 110px; }
+        .stat-num { font-size: 1.8rem; font-weight: 800; }
+        .stat-label { font-size: 0.75rem; color: #868e96; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+        .stat-correct .stat-num { color: #4EE0A8; }
+        .stat-wrong .stat-num { color: #fa5252; }
+        .stat-skip .stat-num { color: #fcc419; }
+        .review-list { width: 100%; max-width: 640px; text-align: left; margin-bottom: 32px; }
+        .review-title { font-size: 0.8rem; font-weight: 700; color: #868e96; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; }
+        .review-item { background: #1a1d27; border: 1px solid #2c2f3e; border-radius: 12px; padding: 16px 18px; margin-bottom: 10px; }
+        .review-item-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .review-badge { font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .badge-correct { background: rgba(78,224,168,0.15); color: #4EE0A8; }
+        .badge-wrong { background: rgba(250,82,82,0.15); color: #fa5252; }
+        .badge-skip { background: rgba(252,196,25,0.15); color: #fcc419; }
+        .review-q { font-size: 0.9rem; font-weight: 600; color: #f1f3f5; }
+        .review-answers { font-size: 0.82rem; color: #868e96; margin-top: 4px; }
+        .correct-ans { color: #4EE0A8; font-weight: 600; }
+        .wrong-ans { color: #fa5252; }
+        .result-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+        .btn-retry { padding: 12px 32px; background: #ff6b35; color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+        .btn-retry:hover { background: #e55a2b; }
+        .btn-home { padding: 12px 32px; background: transparent; color: #ced4da; border: 2px solid #2c2f3e; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+        .btn-home:hover { border-color: #868e96; color: #f1f3f5; }
+
+        @media (max-width: 600px) {
+            .top-bar, .bottom-bar { padding: 12px 16px; }
+            .exam-body { padding: 24px 16px; }
+            .question-text { font-size: 1.05rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="loading-screen">
+    <div class="spinner"></div>
+    <span>Loading exam...</span>
+</div>
+
+<div id="intro-screen">
+    <div class="intro-logo">📋</div>
+    <div class="intro-title" id="intro-title">Exam</div>
+    <div class="intro-sub" id="intro-sub"></div>
+    <div class="intro-rules">
+        <h3>⚠ Exam Rules</h3>
+        <div class="rule-item"><span>🖥</span> The exam runs in fullscreen. Exiting counts as a violation.</div>
+        <div class="rule-item"><span>🚫</span> Switching tabs or windows is recorded.</div>
+        <div class="rule-item"><span>🖱</span> Right-click and copy-paste are disabled.</div>
+        <div class="rule-item"><span>⏱</span> Each question has a timer. Unanswered questions are skipped.</div>
+        <div class="rule-item" id="rule-violations"></div>
+    </div>
+    <button class="btn-start" onclick="startExam()">Start Exam →</button>
+    <a href="student.html" style="margin-top:16px;color:#868e96;font-size:0.9rem;text-decoration:none;">← Back to My Learning</a>
+</div>
+
+<div id="exam-screen">
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <span class="exam-badge">Live Exam</span>
+            <span class="exam-name-label" id="exam-name-label"></span>
+        </div>
+        <div class="top-bar-right">
+            <span class="violation-count" id="violation-count"></span>
+            <div class="timer-box" id="timer-box">
+                <div class="timer-dot"></div>
+                <span id="timer-text">30s</span>
+            </div>
+        </div>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="exam-body">
+        <div class="question-panel" id="question-panel"></div>
+    </div>
+    <div class="bottom-bar">
+        <span class="warn-msg" id="warn-msg"></span>
+        <button class="btn-next" id="btn-next" onclick="nextQuestion()">Next →</button>
+    </div>
+</div>
+
+<div id="violation-overlay">
+    <div class="violation-icon">⚠️</div>
+    <div class="violation-title">Violation Detected</div>
+    <div class="violation-msg" id="violation-msg"></div>
+    <div class="violation-remaining" id="violation-remaining"></div>
+    <button class="btn-resume" onclick="resumeExam()">Resume Exam</button>
+</div>
+
+<div id="result-screen"></div>
+
+<script src="db.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAmnz_IAGyP4v10M2KivpIeSuRkpuqpbxI",
+    authDomain: "edu-bridge-e5ca8.firebaseapp.com",
+    projectId: "edu-bridge-e5ca8",
+    storageBucket: "edu-bridge-e5ca8.firebasestorage.app",
+    messagingSenderId: "1056859794803",
+    appId: "1:1056859794803:web:0895fc9f615159dcefa906"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const LETTERS = ['A','B','C','D'];
+let QUESTIONS = [], examData = null;
+let current = 0, selected = null, answers = [];
+let timeLeft = 30, timerInterval = null;
+let violations = 0, MAX_VIOLATIONS = 3, examActive = false;
+
+function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+}
+
+// Load exam from Firebase
+const params = new URLSearchParams(window.location.search);
+const examId = params.get('id');
+
+if (!examId) {
+    document.getElementById('loading-screen').innerHTML = '<p style="color:#fa5252">No exam ID provided. <a href="exam-list.html" style="color:#4EE0A8">Go back</a></p>';
+} else {
+    getDoc(doc(db, 'exams', examId)).then(function(snap) {
+        if (!snap.exists()) {
+            document.getElementById('loading-screen').innerHTML = '<p style="color:#fa5252">Exam not found. <a href="exam-list.html" style="color:#4EE0A8">Go back</a></p>';
+            return;
+        }
+        examData = snap.data();
+        MAX_VIOLATIONS = examData.maxViolations || 3;
+        var timePerQ = examData.timePerQuestion || 30;
+        var allQuestions = examData.questions || [];
+        var toShow = examData.questionsToShow || allQuestions.length;
+        // Pick random subset
+        QUESTIONS = shuffle(allQuestions).slice(0, Math.min(toShow, allQuestions.length));
+
+        // Populate intro
+        document.getElementById('intro-title').textContent = examData.title || 'Exam';
+        document.getElementById('intro-sub').textContent =
+            (examData.subject || '') + ' · ' + QUESTIONS.length + ' Questions · ' + timePerQ + 's per question';
+        document.getElementById('rule-violations').innerHTML =
+            '<span>⚡</span> ' + MAX_VIOLATIONS + ' violations will auto-submit your exam.';
+        document.getElementById('exam-name-label').textContent = examData.title || 'Exam';
+
+        document.getElementById('loading-screen').style.display = 'none';
+        document.getElementById('intro-screen').style.display = 'flex';
+
+        // Store timePerQ for use in exam
+        window._timePerQ = timePerQ;
+    }).catch(function(err) {
+        console.error(err);
+        document.getElementById('loading-screen').innerHTML = '<p style="color:#fa5252">Failed to load exam. <a href="exam-list.html" style="color:#4EE0A8">Go back</a></p>';
+    });
+}
+
+// Fullscreen
+function requestFullscreen() {
+    var el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+}
+
+document.addEventListener('fullscreenchange', function() {
+    if (!examActive) return;
+    if (!document.fullscreenElement) recordViolation('You exited fullscreen. Return to continue.');
+});
+document.addEventListener('visibilitychange', function() {
+    if (!examActive) return;
+    if (document.hidden) recordViolation('Tab switching detected.');
+});
+window.addEventListener('blur', function() {
+    if (!examActive) return;
+    recordViolation('Window focus lost. Keep the exam window active.');
+});
+document.addEventListener('contextmenu', function(e) { if (examActive) e.preventDefault(); });
+document.addEventListener('keydown', function(e) {
+    if (!examActive) return;
+    if (e.key === 'F12' || (e.ctrlKey && ['c','v','u','a','s'].includes(e.key.toLowerCase())) ||
+        (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase()))) e.preventDefault();
+});
+document.addEventListener('copy', function(e) { if (examActive) e.preventDefault(); });
+document.addEventListener('paste', function(e) { if (examActive) e.preventDefault(); });
+
+window.startExam = function() {
+    requestFullscreen();
+    examActive = true;
+    document.getElementById('intro-screen').style.display = 'none';
+    document.getElementById('exam-screen').style.display = 'flex';
+    renderQuestion();
+};
+
+function renderQuestion() {
+    var q = QUESTIONS[current];
+    var pct = (current / QUESTIONS.length) * 100;
+    document.getElementById('prog-fill').style.width = pct + '%';
+    document.getElementById('btn-next').textContent = current === QUESTIONS.length - 1 ? 'Submit' : 'Next →';
+
+    var html =
+        '<div class="q-meta">' +
+            '<span class="q-counter">Question ' + (current+1) + ' / ' + QUESTIONS.length + '</span>' +
+            '<span class="q-marks">1 mark</span>' +
+        '</div>' +
+        '<div class="question-text">' + esc(q.text) + '</div>' +
+        '<div class="options">';
+
+    q.options.forEach(function(opt, i) {
+        html += '<button class="option-btn" data-i="' + i + '" onclick="pick(' + i + ')">' +
+            '<span class="option-letter">' + LETTERS[i] + '</span>' + esc(opt) + '</button>';
+    });
+    html += '</div>';
+    document.getElementById('question-panel').innerHTML = html;
+    document.getElementById('warn-msg').textContent = '';
+    selected = null;
+    startTimer();
+}
+
+function startTimer() {
+    clearInterval(timerInterval);
+    timeLeft = window._timePerQ || 30;
+    updateTimer();
+    timerInterval = setInterval(function() {
+        timeLeft--;
+        updateTimer();
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            answers.push({ selected: null, correct: QUESTIONS[current].correctIndex });
+            current++;
+            selected = null;
+            current >= QUESTIONS.length ? renderResult() : renderQuestion();
+        }
+    }, 1000);
+}
+
+function updateTimer() {
+    var el = document.getElementById('timer-text');
+    var box = document.getElementById('timer-box');
+    if (!el) return;
+    el.textContent = timeLeft + 's';
+    box.className = 'timer-box' + (timeLeft <= 10 ? ' warning' : '');
+}
+
+window.pick = function(i) {
+    selected = i;
+    document.querySelectorAll('.option-btn').forEach(function(b) { b.classList.remove('selected'); });
+    var btn = document.querySelector('.option-btn[data-i="' + i + '"]');
+    if (btn) btn.classList.add('selected');
+    document.getElementById('warn-msg').textContent = '';
+};
+
+window.nextQuestion = function() {
+    if (selected === null) {
+        document.getElementById('warn-msg').textContent = '⚠ Please select an answer to continue.';
+        return;
+    }
+    clearInterval(timerInterval);
+    document.querySelectorAll('.option-btn').forEach(function(b) { b.disabled = true; });
+    answers.push({ selected: selected, correct: QUESTIONS[current].correctIndex });
+    current++;
+    selected = null;
+    setTimeout(function() {
+        current >= QUESTIONS.length ? renderResult() : renderQuestion();
+    }, 150);
+};
+
+function recordViolation(msg) {
+    violations++;
+    clearInterval(timerInterval);
+    document.getElementById('violation-msg').textContent = msg;
+    var remaining = MAX_VIOLATIONS - violations;
+    document.getElementById('violation-remaining').textContent =
+        remaining > 0 ? remaining + ' warning(s) remaining before auto-submit.' : 'Final warning. Exam will be submitted.';
+    document.getElementById('violation-overlay').style.display = 'flex';
+    var vc = document.getElementById('violation-count');
+    vc.style.display = 'inline';
+    vc.textContent = '⚠ ' + violations + ' violation' + (violations > 1 ? 's' : '');
+    if (violations >= MAX_VIOLATIONS) {
+        setTimeout(function() {
+            document.getElementById('violation-overlay').style.display = 'none';
+            renderResult(true);
+        }, 2500);
+    }
+}
+
+window.resumeExam = function() {
+    document.getElementById('violation-overlay').style.display = 'none';
+    requestFullscreen();
+    startTimer();
+};
+
+function renderResult(forced) {
+    clearInterval(timerInterval);
+    examActive = false;
+    if (document.exitFullscreen) document.exitFullscreen().catch(function(){});
+
+    var score = answers.filter(function(a) { return a.selected === a.correct; }).length;
+    var wrong = answers.filter(function(a) { return a.selected !== null && a.selected !== a.correct; }).length;
+    var skipped = answers.filter(function(a) { return a.selected === null; }).length;
+    var pct = Math.round((score / QUESTIONS.length) * 100);
+
+    // Save result to IndexedDB
+    var resultToSave = {
+        examId: examId || 'unknown',
+        examTitle: examData ? (examData.title || 'Exam') : 'Exam',
+        subject: examData ? (examData.subject || '') : '',
+        score: score,
+        total: QUESTIONS.length,
+        percentage: pct,
+        completedAt: Date.now(),
+        forced: !!forced
+    };
+    // Always save to localStorage as reliable fallback
+    try {
+        var existing = JSON.parse(localStorage.getItem('edubridge_exam_results') || '[]');
+        existing.push(resultToSave);
+        localStorage.setItem('edubridge_exam_results', JSON.stringify(existing));
+    } catch(e) {}
+    // Also try IndexedDB
+    if (window.EduBridgeDB && EduBridgeDB.addExamResult) {
+        EduBridgeDB.addExamResult(resultToSave).catch(function() {});
+    }
+
+    var icon = pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📚';
+    var label = pct >= 80 ? 'Excellent work!' : pct >= 50 ? 'Good effort!' : 'Keep practising!';
+
+    var html =
+        '<div class="result-icon">' + icon + '</div>' +
+        '<div class="result-score"><span class="score-num">' + score + '</span> / ' + QUESTIONS.length + '</div>' +
+        '<div class="result-pct">' + label + ' · ' + pct + '%' + (forced ? ' · Auto-submitted due to violations' : '') + '</div>' +
+        '<div class="result-stats">' +
+            '<div class="stat-box stat-correct"><div class="stat-num">' + score + '</div><div class="stat-label">Correct</div></div>' +
+            '<div class="stat-box stat-wrong"><div class="stat-num">' + wrong + '</div><div class="stat-label">Wrong</div></div>' +
+            '<div class="stat-box stat-skip"><div class="stat-num">' + skipped + '</div><div class="stat-label">Skipped</div></div>' +
+            '<div class="stat-box"><div class="stat-num" style="color:#868e96">' + violations + '</div><div class="stat-label">Violations</div></div>' +
+        '</div>' +
+        '<div class="review-list"><div class="review-title">Answer Review</div>';
+
+    QUESTIONS.forEach(function(q, i) {
+        var a = answers[i] || { selected: null, correct: q.correctIndex };
+        var isCorrect = a.selected === a.correct;
+        var isSkip = a.selected === null;
+        var badgeClass = isSkip ? 'badge-skip' : isCorrect ? 'badge-correct' : 'badge-wrong';
+        var badgeText = isSkip ? 'Skipped' : isCorrect ? 'Correct' : 'Wrong';
+        html += '<div class="review-item"><div class="review-item-header"><span class="review-badge ' + badgeClass + '">' + badgeText + '</span><span style="font-size:0.75rem;color:#868e96">Q' + (i+1) + '</span></div>' +
+            '<div class="review-q">' + esc(q.text) + '</div><div class="review-answers">';
+        if (!isSkip) html += '<span class="' + (isCorrect ? 'correct-ans' : 'wrong-ans') + '">Your answer: ' + esc(q.options[a.selected]) + '</span>';
+        if (!isCorrect) html += (isSkip ? '' : ' · ') + '<span class="correct-ans">Correct: ' + esc(q.options[a.correct]) + '</span>';
+        html += '</div></div>';
+    });
+
+    html += '</div><div class="result-actions">' +
+        '<a href="student.html" class="btn-retry">← Back to My Learning</a>' +
+        '<a href="exam-list.html" class="btn-home">All Exams</a>' +
+        '</div>';
+
+    document.getElementById('exam-screen').style.display = 'none';
+    document.body.classList.add('result-open');
+    var rs = document.getElementById('result-screen');
+    rs.innerHTML = html;
+    rs.style.display = 'flex';
+}
+</script>
+</body>
+</html>

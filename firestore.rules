@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Teacher applications — anyone can apply, anyone can read their own status
+    match /teacher_applications/{docId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true; // admin approves/rejects
+    }
+
+    // Videos — anyone can read approved ones, server handles writes via Admin SDK
+    match /videos/{docId} {
+      allow read: if true;
+      allow write: if false; // only server-side Admin SDK writes here
+    }
+
+    // Quizzes — anyone can read, approved teachers/admin can write
+    match /quizzes/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Exams — anyone can read, teachers can create
+    match /exams/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Quiz results — anyone can write their own result
+    match /quiz_results/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Chat messages — anyone can read/write
+    match /chat_messages/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Teacher lessons
+    match /teacher_lessons/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

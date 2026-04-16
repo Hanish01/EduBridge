@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Exams - Edu Bridge</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .exams-page { min-height: 100vh; background: var(--bg-light); }
+        .exams-hero {
+            background: var(--bg-white);
+            padding: 32px 0 40px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .exams-hero .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+        .exams-hero h1 { font-size: 1.5rem; color: var(--text-dark); font-weight: 700; }
+        .exams-hero p { color: var(--text-medium); font-size: 1rem; margin-top: 4px; }
+        .exams-main { padding: 40px 0 60px; }
+        .exams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        .exam-card {
+            background: var(--bg-white);
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            padding: 24px;
+            transition: box-shadow 0.2s, transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .exam-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .exam-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .exam-title { font-size: 1.1rem; font-weight: 700; color: var(--text-dark); }
+        .exam-subject-badge {
+            font-size: 0.75rem; font-weight: 600; padding: 4px 10px;
+            border-radius: 999px; background: #E8F8F5; color: var(--primary-teal-dark);
+            white-space: nowrap; flex-shrink: 0;
+        }
+        .exam-meta { display: flex; flex-wrap: wrap; gap: 12px; }
+        .exam-meta-item { font-size: 0.82rem; color: var(--text-light); display: flex; align-items: center; gap: 4px; }
+        .exam-desc { font-size: 0.88rem; color: var(--text-medium); line-height: 1.5; }
+        .btn-take-exam {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            background: #FF6B35;
+            color: #fff;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+            margin-top: auto;
+        }
+        .btn-take-exam:hover { background: #e55a2b; }
+        .loading-state, .empty-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--text-light);
+            grid-column: 1 / -1;
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+    </style>
+</head>
+<body class="exams-page">
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <path d="M16 4L6 10V22L16 28L26 22V10L16 4Z" fill="#4EE0A8"/>
+                        <path d="M16 8L10 11V21L16 24L22 21V11L16 8Z" fill="#FFFFFF"/>
+                        <circle cx="16" cy="16" r="2" fill="#4EE0A8"/>
+                    </svg>
+                    <span class="logo-text">Edu Bridge</span>
+                </a>
+                <div class="header-actions">
+                    <a href="student.html" class="student-login">My Learning</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="exams-hero">
+        <div class="container">
+            <div>
+                <h1>Available Exams</h1>
+                <p>Select an exam to begin. Make sure you're in a quiet place.</p>
+            </div>
+            <a href="student.html" class="btn btn-secondary">← Back</a>
+        </div>
+    </section>
+
+    <main class="exams-main">
+        <div class="exams-grid" id="exams-grid">
+            <div class="loading-state">Loading exams...</div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmnz_IAGyP4v10M2KivpIeSuRkpuqpbxI",
+            authDomain: "edu-bridge-e5ca8.firebaseapp.com",
+            projectId: "edu-bridge-e5ca8",
+            storageBucket: "edu-bridge-e5ca8.firebasestorage.app",
+            messagingSenderId: "1056859794803",
+            appId: "1:1056859794803:web:0895fc9f615159dcefa906"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const grid = document.getElementById('exams-grid');
+
+        function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+        const q = query(collection(db, 'exams'), orderBy('createdAt', 'desc'));
+        onSnapshot(q, function(snapshot) {
+            if (snapshot.empty) {
+                grid.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No exams available yet. Check back later.</p></div>';
+                return;
+            }
+            grid.innerHTML = '';
+            snapshot.docs.forEach(function(doc) {
+                var exam = doc.data();
+                var card = document.createElement('div');
+                card.className = 'exam-card';
+                card.innerHTML =
+                    '<div class="exam-card-header">' +
+                        '<div class="exam-title">' + esc(exam.title) + '</div>' +
+                        '<span class="exam-subject-badge">' + esc(exam.subject || 'General') + '</span>' +
+                    '</div>' +
+                    '<div class="exam-meta">' +
+                        '<span class="exam-meta-item">📝 ' + (exam.questionsToShow || exam.questions?.length || '?') + ' questions</span>' +
+                        '<span class="exam-meta-item">⏱ ' + (exam.timePerQuestion || 30) + 's per question</span>' +
+                        '<span class="exam-meta-item">⚠ ' + (exam.maxViolations || 3) + ' violations allowed</span>' +
+                    '</div>' +
+                    (exam.description ? '<div class="exam-desc">' + esc(exam.description) + '</div>' : '') +
+                    '<a href="exam.html?id=' + encodeURIComponent(doc.id) + '" class="btn-take-exam">Start Exam →</a>';
+                grid.appendChild(card);
+            });
+        }, function(err) {
+            console.error(err);
+            grid.innerHTML = '<div class="empty-state"><p>Failed to load exams. Please try again.</p></div>';
+        });
+    </script>
+</body>
+</html>

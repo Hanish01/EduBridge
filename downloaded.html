@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Downloaded content - Edu Bridge</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .down-page { min-height: 100vh; background: var(--bg-light); }
+        .down-hero { background: var(--bg-white); padding: 32px 0 40px; border-bottom: 1px solid rgba(0,0,0,0.06); }
+        .down-hero .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+        .down-hero h1 { font-size: 1.5rem; color: var(--text-dark); }
+        .down-hero p { color: var(--text-medium); font-size: 1rem; margin-top: 4px; }
+        .down-main { padding: 40px 0 60px; }
+        .down-list { max-width: 640px; margin: 0 auto; }
+        .down-item {
+            display: flex; flex-direction: column; align-items: stretch;
+            background: var(--bg-white); padding: 18px 24px; border-radius: 12px; margin-bottom: 12px;
+            box-shadow: var(--shadow-sm); transition: box-shadow 0.2s;
+        }
+        .down-item:hover { box-shadow: var(--shadow-md); }
+        .down-item-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+        .down-item-info .title { font-weight: 600; color: var(--text-dark); margin-bottom: 4px; }
+        .down-item-info .meta { font-size: 13px; color: var(--text-light); }
+        .down-item-video { margin-top: 16px; width: 100%; border-radius: 8px; overflow: hidden; background: #111; }
+        .down-item-video video { width: 100%; display: block; }
+        .down-item-actions { display: flex; align-items: center; gap: 8px; }
+        .btn-open-lesson {
+            padding: 8px 18px; background: var(--primary-teal); color: var(--bg-white);
+            border-radius: 8px; text-decoration: none; font-weight: 500; font-size: 14px;
+            transition: background 0.2s;
+        }
+        .btn-open-lesson:hover { background: var(--primary-teal-dark); }
+        .down-empty { text-align: center; padding: 60px 24px; color: var(--text-medium); }
+        .down-empty .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+        .down-empty a { color: var(--primary-teal); font-weight: 500; }
+        .lang-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px;
+            font-weight: 600; margin-left: 8px;
+        }
+        .lang-badge.en { background: #E8F8F5; color: var(--primary-teal-dark); }
+        .lang-badge.hi { background: #FFF3CD; color: #856404; }
+        .btn-clear {
+            padding: 8px 16px; background: transparent; color: #dc3545;
+            border: 1px solid #dc3545; border-radius: 8px; font-size: 14px;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-clear:hover { background: #dc3545; color: #fff; }
+        .btn-clear:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body class="down-page">
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4L6 10V22L16 28L26 22V10L16 4Z" fill="#4EE0A8"/>
+                        <path d="M16 8L10 11V21L16 24L22 21V11L16 8Z" fill="#FFFFFF"/>
+                        <circle cx="16" cy="16" r="2" fill="#4EE0A8"/>
+                    </svg>
+                    <span class="logo-text">Edu Bridge</span>
+                </a>
+                <div class="header-actions">
+                    <a href="student.html" class="student-login">My Learning</a>
+                    <a href="index.html" class="logout-btn">Log out</a>
+                </div>
+        </div>
+    </header>
+
+    <section class="down-hero">
+        <div class="container">
+            <div>
+                <h1>Downloaded content</h1>
+                <p>Watch your saved lessons below. Videos play from cache—no internet needed.</p>
+            </div>
+            <a href="student.html" class="btn btn-secondary">Back to My Learning</a>
+            <button id="btn-clear-all" class="btn-clear">🗑 Clear all downloads</button>
+        </div>
+    </section>
+
+    <main class="down-main">
+        <div class="container">
+            <div class="down-list" id="down-list">
+                <div class="down-empty" id="down-empty" style="display:none">
+                    <div class="icon">📂</div>
+                    <p>No downloaded lessons yet.</p>
+                    <p><a href="student.html">Open a lesson</a> and use "Save for offline" to add it here.</p>
+                </div>
+                <div id="down-items"></div>
+        </div>
+    </main>
+
+    <script src="offline.js"></script>
+    <script src="db.js"></script>
+    <script>
+        (function() {
+            EduBridgeDB.getUser().then(function(user) {
+                if (!user || !user.name) {
+                    window.location.href = 'join-student.html';
+                    return;
+                }
+            }).catch(function() {
+                window.location.href = 'join-student.html';
+            });
+
+            function getBaseLessonId(storedLessonId) {
+                if (storedLessonId && storedLessonId.startsWith('en_')) return storedLessonId.substring(3);
+                if (storedLessonId && storedLessonId.startsWith('hi_')) return storedLessonId.substring(3);
+                return storedLessonId;
+            }
+
+            function getLanguage(storedLessonId) {
+                return (storedLessonId && storedLessonId.startsWith('hi_')) ? 'hi' : 'en';
+            }
+
+            // Lessons that have S3 videos — used to fetch a fresh presigned URL if needed
+            var S3_LESSON_IDS = ['intro-algebra', 'linear-equations', 'quadratics'];
+
+            function renderItem(item, videoSrc) {
+                var baseLessonId = getBaseLessonId(item.lessonId);
+                var language = getLanguage(item.lessonId);
+                var isPdf = item.lessonId === 'textbook';
+                var isS3Video = item.courseId === 's3';
+                var openHref;
+                if (isPdf) {
+                    openHref = item.videoUrl || 'PDFs/9thclassMaths_textbook.pdf';
+                } else if (isS3Video) {
+                    openHref = 'video-lesson.html?id=' + encodeURIComponent(item.lessonId);
+                } else {
+                    openHref = 'lesson.html?course=' + encodeURIComponent(item.courseId) + '&lesson=' + encodeURIComponent(baseLessonId);
+                }
+                var openText = isPdf ? 'Open PDF' : 'Open full lesson';
+                var langBadge = language === 'hi'
+                    ? '<span class="lang-badge hi">हिंदी</span>'
+                    : '<span class="lang-badge en">EN</span>';
+                var el = document.createElement('div');
+                el.className = 'down-item';
+                var videoSection = videoSrc
+                    ? '<div class="down-item-video"><video controls playsinline preload="auto" src="' + escapeHtml(videoSrc) + '" title="' + escapeHtml(item.title || '') + '"></video></div>'
+                    : '<div class="down-item-video" style="padding:16px;text-align:center;color:var(--text-light);font-size:0.9rem;">Video not saved yet — open the lesson and click Save for offline.</div>';
+                el.innerHTML =
+                    '<div class="down-item-row">' +
+                    '<div class="down-item-info">' +
+                    '<div class="title">' + escapeHtml(item.title || 'Lesson') + langBadge + '</div>' +
+                    '<div class="meta">' + escapeHtml(item.courseName || item.courseId || '') + '</div>' +
+                    '</div>' +
+                    '<div class="down-item-actions">' +
+                    '<a href="' + escapeHtml(openHref) + '" class="btn-open-lesson"' + (isPdf ? ' target="_blank" rel="noopener"' : '') + '>' + escapeHtml(openText) + '</a>' +
+                    '</div>' +
+                    '</div>' +
+                    videoSection;
+                return el;
+            }
+
+            function render(list) {
+                var container = document.getElementById('down-items');
+                var empty = document.getElementById('down-empty');
+                container.innerHTML = '';
+                if (!list || list.length === 0) {
+                    empty.style.display = 'block';
+                    return;
+                }
+                empty.style.display = 'none';
+
+                list.forEach(function(item) {
+                    var isPdf = item.lessonId === 'textbook';
+                    if (isPdf) {
+                        container.appendChild(renderItem(item, null));
+                        return;
+                    }
+
+                    // Try to load blob from IndexedDB first
+                    var blobId = item.blobId ||
+                        (item.courseId === 's3' ? 's3_' + item.lessonId : 'lesson_' + item.lessonId);
+                    EduBridgeDB.getVideoBlob(blobId).then(function(record) {
+                        if (record && record.blob) {
+                            var objectUrl = URL.createObjectURL(record.blob);
+                            container.appendChild(renderItem(item, objectUrl));
+                        } else {
+                            // Fallback: use stored http URL if available (teacher S3 uploads)
+                            var src = (item.videoUrl && item.videoUrl.startsWith('http')) ? item.videoUrl : null;
+                            container.appendChild(renderItem(item, src));
+                        }
+                    }).catch(function() {
+                        container.appendChild(renderItem(item, null));
+                    });
+                });
+            }
+
+            function escapeHtml(s) {
+                if (!s) return '';
+                var div = document.createElement('div');
+                div.textContent = s;
+                return div.innerHTML;
+            }
+
+            EduBridgeDB.getDownloads().then(render).catch(function() { render([]); });
+
+            document.getElementById('btn-clear-all').addEventListener('click', function() {
+                if (!confirm('Clear all downloaded videos? You will need to re-download them to watch offline.')) return;
+                var btn = this;
+                btn.disabled = true;
+                btn.textContent = 'Clearing...';
+                EduBridgeDB.clearAllDownloads()
+                    .then(function() {
+                        // Also wipe the SW video cache
+                        if ('caches' in window) {
+                            return caches.keys().then(function(keys) {
+                                return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+                            });
+                        }
+                    })
+                    .then(function() {
+                        document.getElementById('down-items').innerHTML = '';
+                        document.getElementById('down-empty').style.display = 'block';
+                        btn.textContent = 'Cleared!';
+                        setTimeout(function() {
+                            btn.disabled = false;
+                            btn.textContent = '🗑 Clear all downloads';
+                        }, 2000);
+                    })
+                    .catch(function() {
+                        btn.disabled = false;
+                        btn.textContent = '🗑 Clear all downloads';
+                        alert('Failed to clear. Please try again.');
+                    });
+            });
+        })();
+    </script>
+</body>
+</html>

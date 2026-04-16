@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson - Edu Bridge</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .lesson-page { min-height: 100vh; background: var(--bg-light); }
+        .lesson-toolbar {
+            background: var(--bg-white); padding: 16px 0; border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .lesson-toolbar .container { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+        .lesson-toolbar .back-link {
+            display: inline-flex; align-items: center; gap: 8px; color: var(--primary-teal);
+            text-decoration: none; font-weight: 500; font-size: 14px;
+        }
+        .lesson-toolbar .back-link:hover { color: var(--primary-teal-dark); }
+        .lesson-main { padding: 40px 0 60px; }
+        
+        .lesson-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        .lesson-card {
+            background: var(--bg-white); border-radius: 16px; box-shadow: var(--shadow-md);
+            padding: 40px; margin: 0 auto 24px auto;
+            max-width: 100%;
+            width: fit-content;
+            min-width: 300px;
+        }
+        .lesson-card.no-pad { padding: 0; overflow: hidden; border-radius: 16px; }
+        
+        .lesson-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .lesson-header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .lesson-badge { 
+            display: inline-block; 
+            background: #E8F8F5; 
+            color: var(--primary-teal-dark); 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            font-size: 13px; 
+            font-weight: 500; 
+        }
+        
+        .lesson-card h1 { 
+            font-size: 1.75rem; 
+            color: var(--text-dark); 
+            line-height: 1.3; 
+            margin: 0;
+        }
+        
+        .btn-save-header {
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px;
+            padding: 10px 20px; 
+            background: var(--primary-teal); 
+            color: var(--bg-white);
+            border: none; border-radius: 8px; 
+            font-weight: 600; font-size: 14px; 
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-save-header:hover { background: var(--primary-teal-dark); }
+        .btn-save-header:disabled { opacity: 0.8; cursor: default; }
+        .btn-save-header.saved { background: var(--green-check); }
+        
+        .lesson-content { 
+            color: var(--text-medium); 
+            line-height: 1.8; 
+            font-size: 1.0625rem; 
+            text-align: center;
+        }
+        .lesson-content p { margin-bottom: 16px; }
+        .lesson-content p:last-child { margin-bottom: 0; }
+        .lesson-content .placeholder-note {
+            background: var(--bg-light); border-left: 4px solid var(--primary-teal); padding: 16px 20px;
+            margin: 24px 0; border-radius: 0 8px 8px 0; font-size: 0.95rem;
+            display: inline-block;
+            text-align: left;
+        }
+        .video-wrap { position: relative; width: 100%; max-width: 800px; margin: 0 auto 24px auto; padding-bottom: 56.25%; height: 0; background: #111; border-radius: 12px; overflow: hidden; }
+        .video-wrap video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; }
+        .video-fallback { margin-top: 12px; font-size: 14px; color: var(--text-light); display: none; text-align: center; }
+        .video-fallback.show { display: block; }
+        
+        .lang-toggle {
+            display: flex; gap: 8px; align-items: center;
+            justify-content: center;
+        }
+        .lang-toggle-label { font-size: 14px; color: var(--text-light); font-weight: 500; }
+        .lang-btn {
+            padding: 6px 14px; border: 2px solid var(--primary-teal); background: transparent;
+            color: var(--primary-teal); border-radius: 20px; font-weight: 600; font-size: 13px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .lang-btn.active { background: var(--primary-teal); color: white; }
+        .lang-btn:hover:not(.active) { background: #E8F8F5; }
+        
+        @media (max-width: 768px) {
+            .lesson-header {
+                flex-direction: column;
+                align-items: center;
+            }
+            .btn-save-header {
+                width: 100%;
+                justify-content: center;
+            }
+            .lesson-card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body class="lesson-page">
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4L6 10V22L16 28L26 22V10L16 4Z" fill="#4EE0A8"/>
+                        <path d="M16 8L10 11V21L16 24L22 21V11L16 8Z" fill="#FFFFFF"/>
+                        <circle cx="16" cy="16" r="2" fill="#4EE0A8"/>
+                    </svg>
+                    <span class="logo-text">Edu Bridge</span>
+                </a>
+                <div class="header-actions">
+                    <a href="downloaded.html" class="student-login">Downloaded content</a>
+                    <a href="student.html" class="student-login">My Learning</a>
+                </div>
+        </div>
+    </header>
+
+    <div class="lesson-toolbar">
+        <div class="container">
+            <div style="display:flex; justify-content:space-between; width:100%; align-items:center; flex-wrap:wrap; gap:12px;">
+                <a href="student.html" class="back-link">← Back to My Learning</a>
+                <div class="lang-toggle">
+                    <span class="lang-toggle-label">Language:</span>
+                    <button type="button" class="lang-btn active" data-lang="en">English</button>
+                    <button type="button" class="lang-btn" data-lang="hi">हिंदी</button>
+                </div>
+            <span id="course-label" class="feature-description" style="margin:0;color:var(--text-light)"></span>
+        </div>
+
+    <main class="lesson-main">
+        <div class="lesson-container">
+            <div class="lesson-card" id="lesson-card">
+                <div class="lesson-header">
+                    <div class="lesson-header-left">
+                        <span class="lesson-badge" id="lesson-badge">Lesson</span>
+                        <h1 id="lesson-title">Loading...</h1>
+                    </div>
+                    <button type="button" class="btn-save-header" id="btn-save-header" style="display:none">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Save for offline
+                    </button>
+                </div>
+                <div id="video-container"></div>
+                <div class="lesson-content" id="lesson-content">
+                    <p>Loading lesson...</p>
+                </div>
+        </div>
+    </main>
+
+    <script src="offline.js"></script>
+    <script src="db.js"></script>
+    <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var courseId = params.get('course') || '';
+            var lessonId = params.get('lesson') || '';
+
+            var courseNames = { math: 'Mathematics', science: 'Science', english: 'English' };
+            var lessonTitles = {
+                'intro-algebra': 'Introduction to Algebra',
+                'linear-equations': 'Linear Equations',
+                'quadratics': 'Quadratic Equations',
+                'forces-motion': 'Forces and Motion',
+                'atoms-molecules': 'Atoms and Molecules',
+                'cell-biology': 'Cell Biology',
+                'grammar-basics': 'Grammar Basics',
+                'reading-comprehension': 'Reading Comprehension',
+                'essay-writing': 'Essay Writing'
+            };
+
+            // Lessons that have videos on S3 (English and Hindi)
+            var hasEnglishVideo = { 'intro-algebra': true, 'linear-equations': true, 'quadratics': true };
+            var hasHindiVideo   = { 'intro-algebra': true, 'linear-equations': true, 'quadratics': true };
+
+            var title = lessonTitles[lessonId] || 'Lesson';
+            var courseName = courseNames[courseId] || courseId || 'Course';
+            var currentLang = 'en';
+            var currentSignedUrl = null; // holds the presigned URL for save-offline
+
+            function escapeHtml(s) {
+                var div = document.createElement('div');
+                div.textContent = s;
+                return div.innerHTML;
+            }
+
+            function s3LessonKey() {
+                // Returns the server route key for the current lesson + language
+                return currentLang === 'hi' ? lessonId + '-hi' : lessonId;
+            }
+
+            function hasAnyVideo() {
+                return !!(hasEnglishVideo[lessonId] || hasHindiVideo[lessonId]);
+            }
+
+            function hasCurrentVideo() {
+                return currentLang === 'hi' ? !!hasHindiVideo[lessonId] : !!hasEnglishVideo[lessonId];
+            }
+
+            document.getElementById('lesson-title').textContent = title;
+            document.getElementById('course-label').textContent = courseName;
+            document.title = title + ' - Edu Bridge';
+
+            function setDownloadState(saved) {
+                var btn = document.getElementById('btn-save-header');
+                if (!btn) return;
+                if (saved) {
+                    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Saved!';
+                    btn.classList.add('saved');
+                    btn.disabled = true;
+                } else {
+                    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Save for offline';
+                    btn.classList.remove('saved');
+                    btn.disabled = false;
+                }
+            }
+
+            function checkDownloadState() {
+                var checkId = currentLang + '_' + lessonId;
+                EduBridgeDB.isDownloaded(courseId, checkId).then(function(saved) {
+                    setDownloadState(saved);
+                }).catch(function() { setDownloadState(false); });
+            }
+
+            function loadVideo() {
+                var videoContainer = document.getElementById('video-container');
+                var lessonContent  = document.getElementById('lesson-content');
+                var saveBtn        = document.getElementById('btn-save-header');
+                currentSignedUrl   = null;
+
+                videoContainer.innerHTML = '<p style="text-align:center;color:var(--text-light);padding:20px 0;">Loading video...</p>';
+                lessonContent.innerHTML  = '';
+                saveBtn.style.display    = 'none';
+
+                if (!hasCurrentVideo()) {
+                    var msg = currentLang === 'hi'
+                        ? 'Hindi video not available for this lesson yet.'
+                        : 'Video not available for this lesson yet.';
+                    videoContainer.innerHTML = '';
+                    lessonContent.innerHTML  = '<p>' + escapeHtml(msg) + '</p>';
+                    saveBtn.style.display    = hasAnyVideo() ? 'inline-flex' : 'none';
+                    checkDownloadState();
+                    return;
+                }
+
+                // Stream directly from server proxy — no fetch needed
+                var langLabel = currentLang === 'hi' ? ' (Hindi)' : '';
+                var streamUrl = '/lesson-video/' + encodeURIComponent(s3LessonKey());
+                currentSignedUrl = streamUrl;
+
+                videoContainer.innerHTML =
+                    '<div class="video-wrap">' +
+                    '<video id="lesson-video" controls preload="auto" playsinline src="' + streamUrl + '" title="' + escapeHtml(title + langLabel) + '"></video>' +
+                    '</div>' +
+                    '<p class="video-fallback" id="video-fallback" style="display:none;text-align:center;font-size:14px;color:var(--text-light);">Video failed to load.</p>';
+
+                lessonContent.innerHTML =
+                    '<p>Watch the video above, then click <strong>Save for offline</strong> to download it.</p>' +
+                    '<div class="placeholder-note">After saving, open it from <strong>Downloaded content</strong>—it works offline without internet!</div>';
+
+                saveBtn.style.display = 'inline-flex';
+                checkDownloadState();
+
+                var videoEl = document.getElementById('lesson-video');
+                if (videoEl) {
+                    videoEl.addEventListener('error', function() {
+                        document.getElementById('video-fallback').style.display = 'block';
+                    });
+                }
+            }
+
+            loadVideo();
+
+            document.querySelectorAll('.lang-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.lang-btn').forEach(function(b) { b.classList.remove('active'); });
+                    this.classList.add('active');
+                    currentLang = this.getAttribute('data-lang');
+                    loadVideo();
+                });
+            });
+
+            document.getElementById('btn-save-header').addEventListener('click', function() {
+                if (!currentSignedUrl) return;
+                var btn = this;
+                btn.disabled = true;
+
+                var saveLessonId = currentLang + '_' + lessonId;
+                var saveTitle    = currentLang === 'hi' ? title + ' (Hindi)' : title;
+                var blobId       = 'lesson_' + saveLessonId;
+
+                // Stream with progress so the user sees download %
+                fetch(currentSignedUrl)
+                    .then(function(res) {
+                        if (!res.ok) throw new Error('fetch failed');
+                        var contentLength = res.headers.get('content-length');
+                        var total = contentLength ? parseInt(contentLength, 10) : 0;
+                        var loaded = 0;
+                        var reader = res.body.getReader();
+                        var chunks = [];
+
+                        function pump() {
+                            return reader.read().then(function(result) {
+                                if (result.done) {
+                                    var blob = new Blob(chunks, { type: 'video/mp4' });
+                                    return blob;
+                                }
+                                chunks.push(result.value);
+                                loaded += result.value.length;
+                                if (total) {
+                                    var pct = Math.round((loaded / total) * 100);
+                                    btn.innerHTML = 'Saving... ' + pct + '%';
+                                } else {
+                                    btn.innerHTML = 'Saving... ' + Math.round(loaded / 1024 / 1024) + 'MB';
+                                }
+                                return pump();
+                            });
+                        }
+                        return pump();
+                    })
+                    .then(function(blob) {
+                        btn.innerHTML = 'Storing...';
+                        return EduBridgeDB.saveVideoBlob(blobId, blob, 'video/mp4')
+                            .then(function() {
+                                return EduBridgeDB.addDownload({
+                                    courseId:   courseId,
+                                    lessonId:   saveLessonId,
+                                    title:      saveTitle,
+                                    courseName: courseName,
+                                    language:   currentLang,
+                                    blobId:     blobId
+                                });
+                            });
+                    })
+                    .then(function() { setDownloadState(true); })
+                    .catch(function(err) {
+                        console.error('Save failed:', err);
+                        btn.disabled = false;
+                        setDownloadState(false);
+                        alert('Could not save video. Please check your connection and try again.');
+                    });
+            });
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js', { scope: './' }).catch(function() {});
+            }
+        })();
+    </script>
+</body>
+</html>

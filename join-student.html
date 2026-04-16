@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join as Student - Edu Bridge</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .join-page { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg-light); }
+        .join-main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+        .join-card {
+            background: var(--bg-white);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            padding: 48px;
+            max-width: 440px;
+            width: 100%;
+        }
+        .join-card h1 { font-size: 1.75rem; margin-bottom: 8px; color: var(--text-dark); }
+        .join-card .subtitle { color: var(--text-medium); margin-bottom: 32px; font-size: 1rem; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 500; color: var(--text-dark); margin-bottom: 8px; font-size: 14px; }
+        .form-group input {
+            width: 100%; padding: 12px 16px; border: 1px solid #dee2e6; border-radius: 8px;
+            font-size: 16px; font-family: inherit; transition: border-color 0.2s;
+        }
+        .form-group input:focus { outline: none; border-color: var(--primary-teal); box-shadow: 0 0 0 3px rgba(78, 224, 168, 0.2); }
+        .join-card .btn { width: 100%; justify-content: center; margin-top: 8px; }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--text-medium); text-decoration: none; font-size: 14px; margin-top: 24px; }
+        .back-link:hover { color: var(--primary-teal); }
+    </style>
+</head>
+<body class="join-page">
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4L6 10V22L16 28L26 22V10L16 4Z" fill="#4EE0A8"/>
+                        <path d="M16 8L10 11V21L16 24L22 21V11L16 8Z" fill="#FFFFFF"/>
+                        <circle cx="16" cy="16" r="2" fill="#4EE0A8"/>
+                    </svg>
+                    <span class="logo-text">Edu Bridge</span>
+                </a>
+                <a href="index.html" class="student-login">Back to Home</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="join-main">
+        <div class="join-card">
+            <h1>Join as Student</h1>
+            <p class="subtitle">Enter your details to start learning.</p>
+            <form id="join-form" action="student.html" method="get">
+                <div class="form-group">
+                    <label for="name">Full name</label>
+                    <input type="text" id="name" name="name" placeholder="e.g. Priya Sharma" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="you@example.com" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Start Learning</button>
+            </form>
+            <a href="index.html" class="back-link">← Back to Home</a>
+        </div>
+    </main>
+
+    <script src="offline.js"></script>
+    <script src="db.js"></script>
+    <script>
+        (function() {
+            EduBridgeDB.getUser().then(function(user) {
+                if (user && user.name) {
+                    window.location.href = 'student.html';
+                    return;
+                }
+            }).catch(function() {});
+
+            document.getElementById('join-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                var name = document.getElementById('name').value.trim();
+                var email = document.getElementById('email').value.trim();
+                if (!name || !email) return;
+                EduBridgeDB.setUser({ name: name, email: email }).then(function() {
+                    try { localStorage.setItem('edubridge_student', JSON.stringify({ name: name, email: email })); } catch (err) {}
+                    window.location.href = 'student.html';
+                }).catch(function() {
+                    try { localStorage.setItem('edubridge_student', JSON.stringify({ name: name, email: email })); } catch (err) {}
+                    window.location.href = 'student.html';
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

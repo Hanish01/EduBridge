@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Portal - Edu Bridge</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .portal-page { min-height: 100vh; background: var(--bg-light); }
+
+        .portal-header {
+            background: var(--bg-white);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .portal-header-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .portal-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .portal-logo-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .portal-logo-sub {
+            font-size: 0.85rem;
+            color: var(--text-medium);
+        }
+        .teacher-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .teacher-name {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+        .teacher-subject {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+        .logout-btn {
+            color: var(--text-medium);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .logout-btn:hover { color: var(--primary-teal); }
+
+        .portal-main {
+            padding: 40px 0 60px;
+        }
+        .portal-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 32px;
+            margin-bottom: 40px;
+            align-items: center;
+        }
+        .hero-text-block {
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%);
+            color: #fff;
+            border-radius: 16px;
+            padding: 28px 26px;
+            box-shadow: var(--shadow-lg);
+        }
+        .hero-eyebrow {
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0.85;
+            margin-bottom: 6px;
+        }
+        .hero-title {
+            font-size: 1.9rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #ffffff;
+        }
+        .hero-subtitle {
+            font-size: 0.98rem;
+            opacity: 0.92;
+            margin-bottom: 16px;
+        }
+        .hero-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .hero-pill {
+            background: rgba(255,255,255,0.14);
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+        }
+        .hero-meta {
+            font-size: 0.8rem;
+            opacity: 0.85;
+        }
+
+        .hero-side-card {
+            background: var(--bg-white);
+            border-radius: 16px;
+            padding: 20px 18px;
+            box-shadow: var(--shadow-md);
+        }
+        .hero-side-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-dark);
+        }
+        .hero-side-list {
+            list-style: none;
+            font-size: 0.9rem;
+            color: var(--text-medium);
+        }
+        .hero-side-list li {
+            margin-bottom: 4px;
+        }
+
+        .portal-sections {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 28px;
+        }
+
+        .section-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .upload-card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 20px 18px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 18px;
+        }
+        .upload-card h3 {
+            font-size: 1.02rem;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .form-group { margin-bottom: 12px; }
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 2px rgba(255,107,53,0.2);
+        }
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .btn-upload {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: #FF6B35;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-upload:hover {
+            background: #e55a2b;
+            transform: translateY(-1px);
+        }
+        .btn-upload:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .my-uploads-section { margin-top: 6px; }
+
+        .upload-item {
+            background: var(--bg-white);
+            border-radius: 10px;
+            padding: 14px 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .upload-item-info h4 {
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            margin-bottom: 2px;
+        }
+        .upload-item-info .meta {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+        .upload-item .status-badge {
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .upload-item .status-badge.published {
+            background: #D4EDDA;
+            color: #155724;
+        }
+
+        .no-uploads {
+            text-align: center;
+            padding: 26px 12px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        /* Chat drawer (teacher) */
+        .chat-drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.25);
+            display: none;
+            z-index: 9998;
+        }
+        .chat-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 340px;
+            max-width: 90vw;
+            height: 100vh;
+            background: #ffffff;
+            box-shadow: -4px 0 14px rgba(0,0,0,0.12);
+            display: none;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        .chat-drawer-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-drawer-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        .chat-drawer-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+        .chat-close-btn {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+        .chat-filter {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .chat-filter select {
+            flex: 1;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            font-size: 0.85rem;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 10px 12px;
+            overflow-y: auto;
+            background: var(--bg-light);
+        }
+        .chat-message {
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+        .chat-message.mine .bubble {
+            background: var(--primary-teal);
+            color: #ffffff;
+        }
+        .bubble {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 10px;
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .meta {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+        .chat-input-row {
+            padding: 8px 10px;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            gap: 6px;
+        }
+        .chat-input-row input {
+            flex: 1;
+            border-radius: 999px;
+            border: 1px solid #dee2e6;
+            padding: 8px 10px;
+            font-size: 0.9rem;
+        }
+        .chat-input-row button {
+            border-radius: 999px;
+            border: none;
+            padding: 8px 12px;
+            background: var(--primary-teal);
+            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        @media (max-width: 900px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+            }
+            .portal-sections {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 768px) {
+            .portal-header-inner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .teacher-info {
+                flex-wrap: wrap;
+                justify-content: space-between;
+                width: 100%;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="portal-page">
+    <header class="portal-header">
+        <div class="portal-header-inner">
+            <div class="portal-logo">
+                <svg class="logo-icon" width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 4L6 10V22L16 28L26 22V10L16 4Z" fill="#4EE0A8"/>
+                    <path d="M16 8L10 11V21L16 24L22 21V11L16 8Z" fill="#FFFFFF"/>
+                    <circle cx="16" cy="16" r="2" fill="#4EE0A8"/>
+                </svg>
+                <div>
+                    <div class="portal-logo-title">Edu Bridge – Teacher</div>
+                    <div class="portal-logo-sub">Create lessons, quizzes and support students</div>
+                </div>
+            </div>
+            <div class="teacher-info">
+                <div>
+                    <div class="teacher-name" id="teacher-name">Teacher</div>
+                    <div class="teacher-subject" id="teacher-subject"></div>
+                </div>
+                <button type="button" class="btn btn-secondary" id="open-chat-sidebar" style="padding:8px 14px;font-size:0.85rem;">Student chats</button>
+                <a href="#" class="logout-btn" id="logout-btn">Log out</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="portal-main">
+        <div class="portal-container">
+            <div class="hero-grid">
+                <div class="hero-text-block">
+                    <div class="hero-eyebrow">Teacher workspace</div>
+                    <div class="hero-title">Welcome, <span id="welcome-name">Teacher</span></div>
+                    <div class="hero-subtitle">
+                        Publish quick video lessons, share notes and create quizzes that work even on slow internet for your students.
+                    </div>
+                    <div class="hero-pills">
+                        <div class="hero-pill">📤 Upload lessons</div>
+                        <div class="hero-pill">🧮 Maths quizzes</div>
+                        <div class="hero-pill">Offline-friendly content</div>
+                    </div>
+                    <div class="hero-meta">
+                        Tip: keep your videos short (5–10 minutes) and compress them for faster loading in low-bandwidth areas.
+                    </div>
+                </div>
+                <aside class="hero-side-card">
+                    <div class="hero-side-title">What you can do here</div>
+                    <ul class="hero-side-list">
+                        <li>• Publish subject-wise video lessons</li>
+                        <li>• Attach YouTube or Drive links</li>
+                        <li>• Create quick maths quizzes for Class 9</li>
+                        <li>• See a list of everything you’ve published</li>
+                    </ul>
+                </aside>
+            </div>
+
+            <div class="portal-sections">
+                <!-- Section 1: Upload Lesson -->
+                <section>
+                    <h2 class="section-title">📤 Upload Lesson</h2>
+                    <div class="upload-card" style="text-align:center;padding:28px 20px;">
+                        <a href="public/upload.html" class="btn-upload" style="display:inline-block;font-size:1rem;padding:14px 28px;">
+                            📤 Upload Video Lesson
+                        </a>
+                        <p style="margin-top:12px;color:var(--text-medium);font-size:0.9rem;">Videos go through admin approval before students can see them.</p>
+                    </div>
+                    <div class="my-uploads-section">
+                        <h2 class="section-title">📚 My Published Lessons</h2>
+                        <div id="uploads-list">
+                            <div class="no-uploads">No lessons published yet.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <aside>
+                    <!-- Section 2: Create Quiz -->
+                    <h2 class="section-title">🧮 Create Practice Quiz</h2>
+                    <div class="upload-card">
+                        <form id="teacher-quiz-form">
+                            <div class="form-group">
+                                <label>Quiz Title</label>
+                                <input id="quiz-title" type="text" placeholder="e.g. Algebra Basics">
+                            </div>
+                            <div class="form-group">
+                                <label>Subject</label>
+                                <select id="quiz-subject">
+                                    <option value="Mathematics">Mathematics</option>
+                                    <option value="Science">Science</option>
+                                    <option value="English">English</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label style="font-size:0.8rem;color:var(--text-light);">Questions (one per line)</label>
+                                <p style="font-size:0.75rem;color:var(--text-light);margin-bottom:6px;">Format: <code>question | opt1; opt2; opt3; opt4 | correct number</code></p>
+                                <textarea id="quiz-questions" rows="5" placeholder="2x+6=14, find x? | 2; 4; 6; 8 | 2" style="width:100%;padding:10px;border-radius:8px;border:1px solid #dee2e6;font-size:0.85rem;resize:vertical;font-family:inherit;"></textarea>
+                            </div>
+                            <button type="submit" id="quiz-save-btn" class="btn-upload" style="width:100%;justify-content:center;margin-top:4px;">💾 Save Quiz</button>
+                            <div id="quiz-message" style="margin-top:6px;font-size:0.85rem;"></div>
+                        </form>
+                    </div>
+
+                    <!-- Section 3: Exams -->
+                    <h2 class="section-title" style="margin-top:24px;">📝 Exams</h2>
+                    <div class="upload-card" style="display:flex;flex-direction:column;gap:12px;">
+                        <a href="create-exam.html" class="btn-upload" style="justify-content:center;background:#4EE0A8;color:#0d6e56;">
+                            ➕ Create New Exam
+                        </a>
+                        <a href="exam-list.html" class="btn-upload" style="justify-content:center;background:#f8f9fa;color:#495057;border:1px solid #dee2e6;">
+                            📋 View All Exams
+                        </a>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <script src="offline.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmnz_IAGyP4v10M2KivpIeSuRkpuqpbxI",
+            authDomain: "edu-bridge-e5ca8.firebaseapp.com",
+            projectId: "edu-bridge-e5ca8",
+            storageBucket: "edu-bridge-e5ca8.firebasestorage.app",
+            messagingSenderId: "1056859794803",
+            appId: "1:1056859794803:web:0895fc9f615159dcefa906",
+            measurementId: "G-J1K1LKPEBZ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const chatOverlay = document.getElementById('teacher-chat-overlay');
+        const chatDrawer = document.getElementById('teacher-chat-drawer');
+        const chatClose = document.getElementById('teacher-chat-close');
+        const chatSubjectSelect = document.getElementById('teacher-chat-subject');
+        const chatMessagesEl = document.getElementById('teacher-chat-messages');
+        const chatInputEl = document.getElementById('teacher-chat-input');
+        const chatSendBtn = document.getElementById('teacher-chat-send');
+
+        let chatUnsubscribe = null;
+        let currentChatSubject = 'math';
+
+        // Check teacher login
+        let teacherData = null;
+        try {
+            const stored = localStorage.getItem('teacher_login');
+            if (stored) {
+                teacherData = JSON.parse(stored);
+            }
+        } catch (e) {}
+        
+        if (!teacherData) {
+            window.location.href = 'teacher-login.html';
+        }
+
+        // Display teacher info
+        document.getElementById('teacher-name').textContent = teacherData.name || 'Teacher';
+        document.getElementById('welcome-name').textContent = teacherData.name || 'Teacher';
+        document.getElementById('teacher-subject').textContent = teacherData.subject || '';
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('teacher_login');
+            window.location.href = 'index.html';
+        });
+
+        // Load teacher's uploads
+        function loadUploads() {
+            const container = document.getElementById('uploads-list');
+            const q = query(collection(db, 'teacher_lessons'), where('teacherEmail', '==', teacherData.email));
+            
+            onSnapshot(q, (snapshot) => {
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="no-uploads">No lessons published yet. Start by uploading your first lesson above!</div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                snapshot.docs.forEach(doc => {
+                    const lesson = doc.data();
+                    const item = document.createElement('div');
+                    item.className = 'upload-item';
+                    item.innerHTML = `
+                        <div class="upload-item-info">
+                            <h4>${escapeHtml(lesson.title)}</h4>
+                            <div class="meta">${escapeHtml(lesson.subject)} • ${lesson.createdAt ? new Date(lesson.createdAt.seconds * 1000).toLocaleDateString() : 'Recently'}</div>
+                        <span class="status-badge published">Published</span>
+                    `;
+                    container.appendChild(item);
+                });
+            });
+        }
+
+        loadUploads();
+
+        // Handle upload
+        document.getElementById('upload-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const uploadBtn = document.getElementById('upload-btn');
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Publishing...';
+            
+            const lessonData = {
+                title: document.getElementById('title').value.trim(),
+                subject: document.getElementById('subject').value,
+                description: document.getElementById('description').value.trim(),
+                videoUrl: document.getElementById('videoUrl').value.trim(),
+                teacherEmail: teacherData.email,
+                teacherName: teacherData.name,
+                status: 'published',
+                createdAt: serverTimestamp()
+            };
+            
+            try {
+                await addDoc(collection(db, 'teacher_lessons'), lessonData);
+                
+                document.getElementById('upload-form').reset();
+                alert('Lesson published successfully!');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error publishing lesson. Please try again.');
+            }
+            
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = '📤 Publish Lesson';
+        });
+
+        // Simple quiz creation for this teacher
+        function parseQuizQuestions(raw) {
+            const lines = (raw || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+            const questions = [];
+            lines.forEach(line => {
+                const parts = line.split('|').map(p => p.trim());
+                if (parts.length < 3) return;
+                const text = parts[0];
+                const optionsPart = parts[1];
+                const correctPart = parts[2];
+                const options = optionsPart.split(';').map(o => o.trim()).filter(Boolean);
+                const correctIndex = Math.max(0, (parseInt(correctPart, 10) || 1) - 1);
+                if (!text || options.length === 0) return;
+                questions.push({ text, options, correctIndex });
+            });
+            return questions;
+        }
+
+        document.getElementById('teacher-quiz-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const titleEl = document.getElementById('quiz-title');
+            const subjectEl = document.getElementById('quiz-subject');
+            const questionsEl = document.getElementById('quiz-questions');
+            const saveBtn = document.getElementById('quiz-save-btn');
+            const msgEl = document.getElementById('quiz-message');
+
+            const title = titleEl.value.trim();
+            const subject = subjectEl.value || 'Mathematics';
+            const questions = parseQuizQuestions(questionsEl.value);
+
+            if (!title || questions.length === 0) {
+                msgEl.textContent = 'Please enter a title and at least one valid question.';
+                msgEl.style.color = '#dc3545';
+                return;
+            }
+
+            saveBtn.disabled = true;
+            msgEl.textContent = 'Saving quiz...';
+            msgEl.style.color = '#666';
+
+            try {
+                await addDoc(collection(db, 'quizzes'), {
+                    title,
+                    subject,
+                    level: 'Class 9',
+                    createdByRole: 'teacher',
+                    teacherEmail: teacherData.email,
+                    teacherName: teacherData.name,
+                    createdAt: serverTimestamp(),
+                    questions
+                });
+                titleEl.value = '';
+                questionsEl.value = '';
+                msgEl.textContent = 'Quiz saved. Students can see it under Practice Quizzes.';
+                msgEl.style.color = '#155724';
+            } catch (err) {
+                console.error(err);
+                msgEl.textContent = 'Error saving quiz. Please try again.';
+                msgEl.style.color = '#dc3545';
+            } finally {
+                saveBtn.disabled = false;
+            }
+        });
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Teacher chat sidebar
+        function openChatSidebar() {
+            chatOverlay.style.display = 'block';
+            chatDrawer.style.display = 'flex';
+            chatInputEl.value = '';
+            attachChatListener();
+        }
+
+        function closeChatSidebar() {
+            chatOverlay.style.display = 'none';
+            chatDrawer.style.display = 'none';
+            if (chatUnsubscribe) {
+                chatUnsubscribe();
+                chatUnsubscribe = null;
+            }
+        }
+
+        function attachChatListener() {
+            if (chatUnsubscribe) {
+                chatUnsubscribe();
+                chatUnsubscribe = null;
+            }
+            const subjectId = currentChatSubject;
+            const qChat = query(
+                collection(db, 'chat_messages'),
+                where('subjectId', '==', subjectId)
+            );
+            chatMessagesEl.innerHTML = '<div class="meta">Loading messages...</div>';
+            chatUnsubscribe = onSnapshot(qChat, (snapshot) => {
+                const docs = snapshot.docs
+                    .map(d => ({ id: d.id, ...d.data() }))
+                    .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+                chatMessagesEl.innerHTML = '';
+                if (!docs.length) {
+                    chatMessagesEl.innerHTML = '<div class="meta">No messages for this subject yet.</div>';
+                    return;
+                }
+                docs.slice(-50).forEach(msg => {
+                    const isMine = msg.fromRole === 'teacher' && msg.teacherEmail === teacherData.email;
+                    const when = msg.createdAt && msg.createdAt.seconds
+                        ? new Date(msg.createdAt.seconds * 1000)
+                        : null;
+                    const timeLabel = when ? when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                    const item = document.createElement('div');
+                    item.className = 'chat-message' + (isMine ? ' mine' : '');
+                    item.innerHTML = `
+                        <div class="bubble">${escapeHtml(msg.text || '')}</div>
+                        <span class="meta">${isMine ? 'You' : escapeHtml(msg.studentName || 'Student')} ${timeLabel ? '• ' + timeLabel : ''}</span>
+                    `;
+                    chatMessagesEl.appendChild(item);
+                });
+                chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+            }, () => {
+                chatMessagesEl.innerHTML = '<div class="meta">Failed to load messages.</div>';
+            });
+        }
+
+        document.getElementById('open-chat-sidebar').addEventListener('click', openChatSidebar);
+        chatOverlay.addEventListener('click', closeChatSidebar);
+        chatClose.addEventListener('click', closeChatSidebar);
+        chatSubjectSelect.addEventListener('change', function () {
+            currentChatSubject = this.value || 'math';
+            if (chatDrawer.style.display === 'flex') {
+                attachChatListener();
+            }
+        });
+
+        chatSendBtn.addEventListener('click', async function () {
+            const text = (chatInputEl.value || '').trim();
+            if (!text) return;
+            chatSendBtn.disabled = true;
+            try {
+                await addDoc(collection(db, 'chat_messages'), {
+                    subjectId: currentChatSubject,
+                    subjectName: chatSubjectSelect.options[chatSubjectSelect.selectedIndex].text || '',
+                    studentEmail: '', // generic broadcast or will be visible to all students of this subject
+                    studentName: '',
+                    teacherEmail: teacherData.email,
+                    teacherName: teacherData.name,
+                    fromRole: 'teacher',
+                    text,
+                    createdAt: serverTimestamp()
+                });
+                chatInputEl.value = '';
+            } catch (e) {
+                console.error(e);
+            } finally {
+                chatSendBtn.disabled = false;
+            }
+        });
+
+        chatInputEl.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                chatSendBtn.click();
+            }
+        });
+    </script>
+</body>
+
+<!-- Teacher chat drawer markup -->
+<div class="chat-drawer-overlay" id="teacher-chat-overlay"></div>
+<aside class="chat-drawer" id="teacher-chat-drawer">
+    <div class="chat-drawer-header">
+        <div>
+            <div class="chat-drawer-title">Student chats</div>
+            <div class="chat-drawer-subtitle">View questions by subject</div>
+        </div>
+        <button class="chat-close-btn" id="teacher-chat-close" aria-label="Close chat">×</button>
+    </div>
+    <div class="chat-filter">
+        <label for="teacher-chat-subject" style="font-size:0.8rem;color:var(--text-light);">Subject</label>
+        <select id="teacher-chat-subject">
+            <option value="math">Mathematics</option>
+            <option value="science">Science</option>
+            <option value="english">English</option>
+        </select>
+    </div>
+    <div class="chat-messages" id="teacher-chat-messages"></div>
+    <div class="chat-input-row">
+        <input type="text" id="teacher-chat-input" placeholder="Reply to students..." autocomplete="off">
+        <button type="button" id="teacher-chat-send">Send</button>
+    </div>
+</aside>
+</body>
+</html>

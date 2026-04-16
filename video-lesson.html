@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson - Edu Bridge</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .lesson-page { min-height: 100vh; background: var(--bg-light); }
+        .lesson-toolbar {
+            background: var(--bg-white);
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .lesson-toolbar .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-teal);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .back-link:hover { color: var(--primary-teal-dark); }
+        .lesson-main { padding: 40px 0 60px; }
+        .lesson-container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+        .lesson-card {
+            background: var(--bg-white);
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            padding: 40px;
+            margin-bottom: 24px;
+        }
+        .lesson-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .lesson-badge {
+            display: inline-block;
+            background: #E8F8F5;
+            color: var(--primary-teal-dark);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .lesson-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.3;
+            margin: 0;
+        }
+        .lesson-meta {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+        .btn-save {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--primary-teal);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .btn-save:hover { background: var(--primary-teal-dark); }
+        .btn-save:disabled { opacity: 0.8; cursor: default; }
+        .btn-save.saved { background: var(--green-check); }
+        .video-wrap {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            height: 0;
+            background: #111;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .video-wrap video {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: block;
+        }
+        .lesson-note {
+            background: var(--bg-light);
+            border-left: 4px solid var(--primary-teal);
+            padding: 14px 18px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            color: var(--text-medium);
+            line-height: 1.6;
+        }
+        .error-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--text-light);
+        }
+        @media (max-width: 768px) {
+            .lesson-header { flex-direction: column; }
+            .btn-save { width: 100%; justify-content: center; }
+            .lesson-card { padding: 24px; }
+        }
+    </style>
+</head>
+<body class="lesson-page">
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <path d="M16 4L6 10V22L16 28L26 22V10L16 4Z" fill="#4EE0A8"/>
+                        <path d="M16 8L10 11V21L16 24L22 21V11L16 8Z" fill="#FFFFFF"/>
+                        <circle cx="16" cy="16" r="2" fill="#4EE0A8"/>
+                    </svg>
+                    <span class="logo-text">Edu Bridge</span>
+                </a>
+                <div class="header-actions">
+                    <a href="downloaded.html" class="student-login">Downloaded content</a>
+                    <a href="student.html" class="student-login">My Learning</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="lesson-toolbar">
+        <div class="container">
+            <a href="student.html" class="back-link">← Back to My Learning</a>
+            <span id="subject-label" style="font-size:14px;color:var(--text-light);"></span>
+        </div>
+    </div>
+
+    <main class="lesson-main">
+        <div class="lesson-container">
+            <div class="lesson-card" id="lesson-card">
+                <div style="text-align:center;padding:40px;color:var(--text-light);">Loading lesson...</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="offline.js"></script>
+    <script src="db.js"></script>
+    <script>
+    (function () {
+        var params = new URLSearchParams(window.location.search);
+        var videoId = params.get('id');
+        var card = document.getElementById('lesson-card');
+
+        function escapeHtml(s) {
+            var div = document.createElement('div');
+            div.textContent = s || '';
+            return div.innerHTML;
+        }
+
+        function setDownloadState(saved) {
+            var btn = document.getElementById('btn-save');
+            if (!btn) return;
+            if (saved) {
+                btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Saved!';
+                btn.classList.add('saved');
+                btn.disabled = true;
+            } else {
+                btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Save for offline';
+                btn.classList.remove('saved');
+                btn.disabled = false;
+            }
+        }
+
+        function renderLesson(video) {
+            document.title = video.title + ' - Edu Bridge';
+            document.getElementById('subject-label').textContent = video.subject || '';
+
+            // Use server proxy stream — avoids CORS/presigned URL issues
+            var streamUrl = '/video-stream/' + encodeURIComponent(videoId);
+
+            card.innerHTML =
+                '<div class="lesson-header">' +
+                    '<div>' +
+                        '<span class="lesson-badge">' + escapeHtml(video.subject || 'Lesson') + '</span>' +
+                        '<h1 class="lesson-title">' + escapeHtml(video.title) + '</h1>' +
+                        (video.createdBy ? '<p class="lesson-meta">By ' + escapeHtml(video.createdBy) + '</p>' : '') +
+                    '</div>' +
+                    '<button type="button" class="btn-save" id="btn-save">' +
+                        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+                        ' Save for offline' +
+                    '</button>' +
+                '</div>' +
+                '<div class="video-wrap">' +
+                    '<video id="lesson-video" controls preload="metadata" playsinline src="' + streamUrl + '"></video>' +
+                '</div>' +
+                '<div class="lesson-note">' +
+                    'Watch the video above, then click <strong>Save for offline</strong> to cache it on your device.' +
+                '</div>';
+
+            // Check if already saved
+            EduBridgeDB.isDownloaded('s3', videoId).then(function (saved) {
+                setDownloadState(saved);
+            }).catch(function () {});
+
+            // Save button handler
+            document.getElementById('btn-save').addEventListener('click', function () {
+                var btn = this;
+                btn.disabled = true;
+                btn.innerHTML = 'Saving... 0%';
+
+                var blobId = 's3_' + videoId;
+                fetch(streamUrl)
+                    .then(function(res) {
+                        if (!res.ok) throw new Error('fetch failed');
+                        var contentLength = res.headers.get('content-length');
+                        var total = contentLength ? parseInt(contentLength, 10) : 0;
+                        var loaded = 0;
+                        var reader = res.body.getReader();
+                        var chunks = [];
+                        function pump() {
+                            return reader.read().then(function(result) {
+                                if (result.done) return new Blob(chunks, { type: 'video/mp4' });
+                                chunks.push(result.value);
+                                loaded += result.value.length;
+                                btn.innerHTML = total
+                                    ? 'Saving... ' + Math.round((loaded / total) * 100) + '%'
+                                    : 'Saving... ' + Math.round(loaded / 1024 / 1024) + 'MB';
+                                return pump();
+                            });
+                        }
+                        return pump();
+                    })
+                    .then(function(blob) {
+                        btn.innerHTML = 'Storing...';
+                        return EduBridgeDB.saveVideoBlob(blobId, blob, 'video/mp4')
+                            .then(function() {
+                                return EduBridgeDB.addDownload({
+                                    courseId: 's3',
+                                    lessonId: videoId,
+                                    title: video.title,
+                                    courseName: video.subject || 'Lesson',
+                                    blobId: blobId
+                                });
+                            });
+                    })
+                    .then(function() { setDownloadState(true); })
+                    .catch(function(err) {
+                        console.error('Save failed:', err);
+                        btn.disabled = false;
+                        setDownloadState(false);
+                        alert('Could not save video. Please check your connection and try again.');
+                    });
+            });
+        }
+
+        function showError(msg) {
+            card.innerHTML = '<div class="error-state"><p>' + escapeHtml(msg) + '</p><a href="student.html" style="color:var(--primary-teal);font-weight:600;">← Back to My Learning</a></div>';
+        }
+
+        if (!videoId) {
+            showError('No lesson selected.');
+            return;
+        }
+
+        fetch('/videos')
+            .then(function (res) { return res.json(); })
+            .then(function (videos) {
+                var video = (videos || []).find(function (v) { return v.id === videoId; });
+                if (!video) {
+                    showError('Lesson not found.');
+                    return;
+                }
+                renderLesson(video);
+            })
+            .catch(function () {
+                showError('Could not load lesson. Please check your connection.');
+            });
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js', { scope: './' }).catch(function () {});
+        }
+    })();
+    </script>
+</body>
+</html>

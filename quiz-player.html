@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - Edu Bridge</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .quiz-page { min-height: 100vh; background: var(--bg-light); }
+        .quiz-main { padding: 32px 0 60px; }
+        .quiz-card {
+            max-width: 760px;
+            margin: 0 auto;
+            background: var(--bg-white);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            padding: 32px 24px;
+        }
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .quiz-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        .quiz-tag {
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #E8F8F5;
+            color: var(--primary-teal-dark);
+            font-weight: 600;
+        }
+        .quiz-meta {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+        .question {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .question:last-of-type {
+            border-bottom: none;
+            margin-bottom: 16px;
+        }
+        .question-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+        .options { list-style: none; }
+        .option { margin-bottom: 6px; }
+        .option label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .option input { accent-color: var(--primary-teal); }
+        .option label:hover { background: var(--bg-light); }
+        .quiz-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .quiz-actions .btn {
+            padding: 10px 20px;
+            font-size: 0.95rem;
+        }
+        .quiz-result {
+            margin-top: 20px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            background: #D4EDDA;
+            color: #155724;
+            font-size: 0.95rem;
+            display: none;
+        }
+        .quiz-result.show { display: block; }
+        .quiz-note {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+        .quiz-status {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body class="quiz-page">
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4L6 10V22L16 28L26 22V10L16 4Z" fill="#4EE0A8"/>
+                        <path d="M16 8L10 11V21L16 24L22 21V11L16 8Z" fill="#FFFFFF"/>
+                        <circle cx="16" cy="16" r="2" fill="#4EE0A8"/>
+                    </svg>
+                    <span class="logo-text">Edu Bridge</span>
+                </a>
+                <div class="header-actions">
+                    <a href="student.html" class="student-login">My Learning</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="quiz-main">
+        <div class="container">
+            <div class="quiz-card" id="quiz-card">
+                <div id="quiz-loading" class="quiz-meta">Loading quiz...</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="offline.js"></script>
+    <script src="db.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmnz_IAGyP4v10M2KivpIeSuRkpuqpbxI",
+            authDomain: "edu-bridge-e5ca8.firebaseapp.com",
+            projectId: "edu-bridge-e5ca8",
+            storageBucket: "edu-bridge-e5ca8.firebasestorage.app",
+            messagingSenderId: "1056859794803",
+            appId: "1:1056859794803:web:0895fc9f615159dcefa906",
+            measurementId: "G-J1K1LKPEBZ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const params = new URLSearchParams(window.location.search);
+        const quizId = params.get('quiz');
+        const QUIZ_SCORE_KEY = quizId ? 'edubridge_quiz_score_' + quizId : null;
+
+        const card = document.getElementById('quiz-card');
+        const loadingEl = document.getElementById('quiz-loading');
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function saveLocalResult(score, total) {
+            if (!QUIZ_SCORE_KEY) return;
+            try {
+                localStorage.setItem(QUIZ_SCORE_KEY, JSON.stringify({
+                    score,
+                    total,
+                    attemptedAt: Date.now()
+                }));
+            } catch (e) {}
+        }
+
+        async function syncQueuedResults() {
+            if (!navigator.onLine) return;
+            if (!window.EduBridgeDB || !EduBridgeDB.getUnsyncedQuizAttempts) return;
+            const pending = await EduBridgeDB.getUnsyncedQuizAttempts();
+            if (!pending || !pending.length) return;
+
+            for (const item of pending) {
+                try {
+                    await addDoc(collection(db, 'quiz_results'), {
+                        quizId: item.quizId,
+                        title: item.title,
+                        subject: item.subject,
+                        level: item.level,
+                        score: item.score,
+                        total: item.total,
+                        attemptedAt: serverTimestamp()
+                    });
+                    await EduBridgeDB.markQuizAttemptSynced(item.id);
+                    try {
+                        localStorage.setItem('edubridge_quiz_last_synced', String(Date.now()));
+                    } catch (e) {}
+                } catch (e) {
+                    // stop on first failure to avoid tight loop
+                    break;
+                }
+            }
+        }
+
+        function attachOnlineSync() {
+            window.addEventListener('online', function () {
+                syncQueuedResults().catch(() => {});
+            });
+            syncQueuedResults().catch(() => {});
+        }
+
+        function renderQuiz(quiz) {
+            card.innerHTML = '';
+
+            const header = document.createElement('div');
+            header.className = 'quiz-header';
+            header.innerHTML = `
+                <div>
+                    <div class="quiz-title">${escapeHtml(quiz.title || 'Quiz')}</div>
+                    <div class="quiz-meta">${escapeHtml(quiz.subject || '')} • ${escapeHtml(quiz.level || '')}</div>
+                </div>
+                <span class="quiz-tag">Quiz</span>
+            `;
+
+            const status = document.createElement('div');
+            status.className = 'quiz-status';
+            status.id = 'quiz-status';
+            status.textContent = navigator.onLine ? 'Online mode' : 'Offline mode – result will sync later.';
+
+            const form = document.createElement('form');
+            form.id = 'dynamic-quiz-form';
+
+            (quiz.questions || []).forEach((q, index) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = 'question';
+                const qName = 'q' + index;
+                qDiv.innerHTML = `
+                    <div class="question-title">${index + 1}. ${escapeHtml(q.text || '')}</div>
+                `;
+                const ul = document.createElement('ul');
+                ul.className = 'options';
+                (q.options || []).forEach((opt, optIndex) => {
+                    const li = document.createElement('li');
+                    li.className = 'option';
+                    li.innerHTML = `
+                        <label>
+                            <input type="radio" name="${qName}" value="${optIndex}">
+                            <span>${escapeHtml(opt)}</span>
+                        </label>
+                    `;
+                    ul.appendChild(li);
+                });
+                qDiv.appendChild(ul);
+                form.appendChild(qDiv);
+            });
+
+            const actions = document.createElement('div');
+            actions.className = 'quiz-actions';
+            actions.innerHTML = `
+                <button type="submit" class="btn btn-primary">Submit Quiz</button>
+                <button type="button" id="btn-reset-quiz" class="btn btn-secondary">Reset</button>
+            `;
+            form.appendChild(actions);
+
+            const resultBox = document.createElement('div');
+            resultBox.id = 'quiz-result-box';
+            resultBox.className = 'quiz-result';
+
+            const note = document.createElement('div');
+            note.className = 'quiz-note';
+            note.textContent = 'Your latest score is saved on this device and will sync to the server when internet is available.';
+
+            card.appendChild(header);
+            card.appendChild(status);
+            card.appendChild(form);
+            card.appendChild(resultBox);
+            card.appendChild(note);
+
+            function showResult(score, total, fromStorage) {
+                const percent = Math.round((score / total) * 100);
+                let msg = `You scored ${score} / ${total} (${percent}%).`;
+                if (fromStorage) {
+                    msg = `Last saved attempt: ` + msg;
+                }
+                resultBox.textContent = msg;
+                resultBox.classList.add('show');
+            }
+
+            // Load last score from local storage if present
+            if (QUIZ_SCORE_KEY) {
+                try {
+                    const raw = localStorage.getItem(QUIZ_SCORE_KEY);
+                    if (raw) {
+                        const data = JSON.parse(raw);
+                        if (typeof data.score === 'number' && typeof data.total === 'number') {
+                            showResult(data.score, data.total, true);
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const questions = quiz.questions || [];
+                let score = 0;
+                questions.forEach((q, index) => {
+                    const name = 'q' + index;
+                    const checked = form.querySelector(`input[name="${name}"]:checked`);
+                    const chosenIndex = checked ? parseInt(checked.value, 10) : -1;
+                    if (chosenIndex === (q.correctIndex || 0)) {
+                        score += 1;
+                    }
+                });
+                const total = questions.length || 1;
+
+                showResult(score, total, false);
+                saveLocalResult(score, total);
+
+                if (window.EduBridgeDB && EduBridgeDB.addQuizAttempt) {
+                    await EduBridgeDB.addQuizAttempt({
+                        quizId,
+                        title: quiz.title || '',
+                        subject: quiz.subject || '',
+                        level: quiz.level || '',
+                        score,
+                        total,
+                        attemptedAt: Date.now(),
+                        synced: navigator.onLine === true
+                    });
+                    if (navigator.onLine) {
+                        await syncQueuedResults();
+                    }
+                } else if (navigator.onLine) {
+                    // Fallback: send directly to Firestore if IndexedDB helper is unavailable
+                    try {
+                        await addDoc(collection(db, 'quiz_results'), {
+                            quizId,
+                            title: quiz.title || '',
+                            subject: quiz.subject || '',
+                            level: quiz.level || '',
+                            score,
+                            total,
+                            attemptedAt: serverTimestamp()
+                        });
+                        try {
+                            localStorage.setItem('edubridge_quiz_last_synced', String(Date.now()));
+                        } catch (e) {}
+                    } catch (e) {}
+                }
+            });
+
+            form.querySelector('#btn-reset-quiz').addEventListener('click', function () {
+                form.reset();
+                resultBox.classList.remove('show');
+            });
+        }
+
+        async function init() {
+            attachOnlineSync();
+            if (!quizId) {
+                loadingEl.textContent = 'No quiz selected.';
+                return;
+            }
+            try {
+                const ref = doc(db, 'quizzes', quizId);
+                const snap = await getDoc(ref);
+                if (!snap.exists()) {
+                    loadingEl.textContent = 'Quiz not found.';
+                    return;
+                }
+                const quiz = snap.data();
+                renderQuiz(quiz);
+            } catch (e) {
+                console.error(e);
+                loadingEl.textContent = 'Error loading quiz. Please try again.';
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Learning - Edu Bridge</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .student-page { min-height: 100vh; background: var(--bg-light); }
+        .student-hero { background: var(--bg-white); padding: 32px 0 40px; border-bottom: 1px solid rgba(0,0,0,0.06); }
+        .student-hero .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+        .student-hero h1 { font-size: 1.5rem; color: var(--text-dark); }
+        .student-hero .welcome { color: var(--text-medium); font-size: 1rem; margin-top: 4px; }
+        .student-hero .actions { display: flex; align-items: center; gap: 12px; }
+        .student-hero .actions .btn { padding: 10px 20px; font-size: 14px; }
+        .student-main { padding: 40px 0 60px; }
+        .section-title { font-size: 1.25rem; font-weight: 600; color: var(--text-dark); margin-bottom: 20px; padding: 0 24px; }
+        .course-card {
+            background: var(--bg-white); border-radius: 12px; box-shadow: var(--shadow-sm);
+            margin-bottom: 24px; overflow: hidden; transition: box-shadow 0.2s;
+        }
+        .course-card:hover { box-shadow: var(--shadow-md); }
+        .course-card-header {
+            padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .course-card-header h2 { font-size: 1.125rem; font-weight: 600; color: var(--text-dark); }
+        .course-card-body { padding: 16px 24px 20px; }
+        .lessons-list { list-style: none; }
+        .lesson-item {
+            display: flex; align-items: center; justify-content: space-between; padding: 14px 16px;
+            border-radius: 8px; margin-bottom: 8px; background: var(--bg-light);
+        }
+        .lesson-item:last-child { margin-bottom: 0; }
+        .lesson-item .title { font-weight: 500; color: var(--text-dark); }
+        .lesson-item .btn-open {
+            padding: 8px 16px; font-size: 14px; background: var(--primary-teal); color: var(--bg-white);
+            border: none; border-radius: 6px; cursor: pointer; text-decoration: none; font-weight: 500;
+            transition: background 0.2s;
+        }
+        .lesson-item .btn-open:hover { background: var(--primary-teal-dark); }
+        .course-resources { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(0,0,0,0.08); }
+        .course-resources .res-label { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .resource-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; background: var(--bg-light); }
+        .resource-item .title { font-weight: 500; color: var(--text-dark); }
+        .resource-item .actions { display: flex; gap: 8px; }
+        .resource-item .btn-open { padding: 8px 16px; font-size: 14px; }
+        .resource-item .btn-save { padding: 8px 16px; font-size: 14px; background: var(--primary-teal); color: var(--bg-white); border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .resource-item .btn-save:hover { background: var(--primary-teal-dark); }
+        .resource-item .btn-save.saved { background: var(--green-check); cursor: default; }
+        .logout-btn { color: var(--text-medium); text-decoration: none; font-size: 14px; }
+        .logout-btn:hover { color: var(--primary-teal); }
+        /* Chat drawer */
+        .chat-drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.25);
+            display: none;
+            z-index: 9998;
+        }
+        .chat-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 320px;
+            max-width: 90vw;
+            height: 100vh;
+            background: #ffffff;
+            box-shadow: -4px 0 14px rgba(0,0,0,0.12);
+            display: none;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        .chat-drawer-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-drawer-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        .chat-drawer-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+        .chat-close-btn {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 10px 12px;
+            overflow-y: auto;
+            background: var(--bg-light);
+        }
+        .chat-message {
+            margin-bottom: 8px;
+            max-width: 90%;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        .chat-message-student {
+            margin-left: auto;
+            text-align: right;
+        }
+        .chat-message-bubble {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 12px;
+            background: #ffffff;
+            color: var(--text-dark);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .chat-message-student .chat-message-bubble {
+            background: var(--primary-teal);
+            color: #ffffff;
+        }
+        .chat-message-meta {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+        .chat-input-row {
+            padding: 8px 10px;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            gap: 6px;
+        }
+        .chat-input-row input {
+            flex: 1;
+            border: 1px solid #dee2e6;
+            border-radius: 999px;
+            padding: 8px 10px;
+            font-size: 0.9rem;
+        }
+        .chat-input-row button {
+            border: none;
+            border-radius: 999px;
+            padding: 8px 12px;
+            background: var(--primary-teal);
+            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .chat-input-row button:disabled {
+            opacity: 0.6;
+            cursor: default;
+        }
+        .subject-chat-btn {
+            font-size: 0.85rem;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--primary-teal);
+            background: #ffffff;
+            color: var(--primary-teal);
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .subject-chat-btn:hover {
+            background: #E8F8F5;
+        }
+    </style>
+</head>
+<body class="student-page">
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4L6 10V22L16 28L26 22V10L16 4Z" fill="#4EE0A8"/>
+                        <path d="M16 8L10 11V21L16 24L22 21V11L16 8Z" fill="#FFFFFF"/>
+                        <circle cx="16" cy="16" r="2" fill="#4EE0A8"/>
+                    </svg>
+                    <span class="logo-text">Edu Bridge</span>
+                </a>
+                <div class="header-actions">
+                    <a href="downloaded.html" class="student-login">Downloaded content</a>
+                    <span id="student-name" class="student-login"></span>
+                    <a href="index.html" class="logout-btn" id="logout-btn">Log out</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="student-hero">
+        <div class="container">
+            <div>
+                <h1>My Learning</h1>
+                <p class="welcome" id="welcome-text">Your subjects and lessons</p>
+            </div>
+            <div class="actions">
+                <a href="exam-list.html" class="btn btn-primary" style="font-size:14px;padding:10px 20px;">📝 Take Exam</a>
+                <a href="index.html" class="btn btn-secondary">Back to Home</a>
+            </div>
+        </div>
+    </section>
+
+    <main class="student-main">
+        <div class="container">
+            <h2 class="section-title">Subjects & Courses</h2>
+            <div id="courses-container"><!-- filled by script --></div>
+
+            <!-- Exam Results Graph -->
+            <h2 class="section-title" style="margin-top:32px;">My Exam Results</h2>
+            <div id="exam-results-section" style="padding:0 24px;margin-bottom:32px;">
+                <div id="exam-graph-wrap" style="background:var(--bg-white);border-radius:12px;box-shadow:var(--shadow-sm);padding:24px;">
+                    <p style="color:var(--text-light);font-size:0.9rem;text-align:center;">Loading results...</p>
+                </div>
+            </div>
+
+            <h2 class="section-title" style="margin-top:32px;">Practice Quizzes</h2>
+            <p id="quiz-sync-indicator" style="margin:-8px 24px 12px;font-size:0.8rem;color:var(--text-light);">
+                <!-- filled by script -->
+            </p>
+            <div id="quizzes-container"><!-- filled by firebase script --></div>
+        </div>
+    </main>
+
+    <!-- Student chat drawer -->
+    <div class="chat-drawer-overlay" id="student-chat-overlay"></div>
+    <aside class="chat-drawer" id="student-chat-drawer">
+        <div class="chat-drawer-header">
+            <div>
+                <div class="chat-drawer-title" id="student-chat-title">Subject chat</div>
+                <div class="chat-drawer-subtitle">
+                    Talk to your teacher about this subject
+                    <span id="student-chat-sync" style="display:block;font-size:0.75rem;"></span>
+                </div>
+            </div>
+            <button class="chat-close-btn" id="student-chat-close" aria-label="Close chat">×</button>
+        </div>
+        <div class="chat-messages" id="student-chat-messages"></div>
+        <div class="chat-input-row">
+            <input type="text" id="student-chat-input" placeholder="Type a message..." autocomplete="off">
+            <button type="button" id="student-chat-send">Send</button>
+        </div>
+    </aside>
+
+    <script src="offline.js"></script>
+    <script src="db.js"></script>
+    <script>
+        (function() {
+            function applyUser(student) {
+                if (student && student.name) {
+                    document.getElementById('student-name').textContent = student.name;
+                    document.getElementById('welcome-text').textContent = 'Welcome back, ' + student.name + '. Continue from where you left off.';
+                } else {
+                    document.getElementById('student-name').textContent = 'Student';
+                }
+            }
+
+            EduBridgeDB.getUser()
+                .then(function(user) {
+                    if (user && user.name) {
+                        applyUser(user);
+                        return;
+                    }
+                    var student = null;
+                    try {
+                        var raw = localStorage.getItem('edubridge_student');
+                        if (raw) student = JSON.parse(raw);
+                    } catch (e) {}
+                    if (student && student.name) {
+                        EduBridgeDB.setUser({ name: student.name, email: student.email || '' }).catch(function() {});
+                        applyUser(student);
+                    } else {
+                        applyUser(null);
+                        window.location.href = 'join-student.html';
+                        return;
+                    }
+                })
+                .catch(function() {
+                    var student = null;
+                    try {
+                        var raw = localStorage.getItem('edubridge_student');
+                        if (raw) student = JSON.parse(raw);
+                    } catch (e) {}
+                    applyUser(student);
+                    if (!student || !student.name) window.location.href = 'join-student.html';
+                });
+
+            document.getElementById('logout-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                EduBridgeDB.clearUser().then(function() {
+                    try { localStorage.removeItem('edubridge_student'); } catch (err) {}
+                    window.location.href = 'index.html';
+                }).catch(function() {
+                    try { localStorage.removeItem('edubridge_student'); } catch (err) {}
+                    window.location.href = 'index.html';
+                });
+            });
+
+            var courses = [
+                {
+                    id: 'math',
+                    title: 'Mathematics',
+                    description: 'Algebra, geometry, and problem solving',
+                    lessons: [
+                        { id: 'intro-algebra', title: 'Introduction to Algebra' },
+                        { id: 'linear-equations', title: 'Linear Equations' },
+                        { id: 'quadratics', title: 'Quadratic Equations' }
+                    ],
+                    resources: [
+                        { id: 'textbook', title: '9th Class Maths Textbook (PDF)', file: 'PDFs/9thclassMaths_textbook.pdf' }
+                    ]
+                },
+                {
+                    id: 'science',
+                    title: 'Science',
+                    description: 'Physics, chemistry, and biology basics',
+                    lessons: [
+                        { id: 'forces-motion', title: 'Forces and Motion' },
+                        { id: 'atoms-molecules', title: 'Atoms and Molecules' },
+                        { id: 'cell-biology', title: 'Cell Biology' }
+                    ],
+                    resources: []
+                },
+                {
+                    id: 'english',
+                    title: 'English',
+                    description: 'Grammar, comprehension, and writing',
+                    lessons: [
+                        { id: 'grammar-basics', title: 'Grammar Basics' },
+                        { id: 'reading-comprehension', title: 'Reading Comprehension' },
+                        { id: 'essay-writing', title: 'Essay Writing' }
+                    ],
+                    resources: []
+                }
+            ];
+
+            var container = document.getElementById('courses-container');
+            courses.forEach(function(course) {
+                var card = document.createElement('div');
+                card.className = 'course-card';
+                var chatButtonHtml = (course.id === 'math' || course.id === 'science')
+                    ? '<button type="button" class="subject-chat-btn" data-subject="' + escapeHtml(course.id) + '" data-subject-name="' + escapeHtml(course.title) + '">Chat about this subject</button>'
+                    : '';
+
+                card.innerHTML =
+                    '<div class="course-card-header">' +
+                    '<h2>' + escapeHtml(course.title) + '</h2>' +
+                    '</div>' +
+                    '<div class="course-card-body">' +
+                    '<p class="feature-description" style="margin-bottom:16px;text-align:left">' + escapeHtml(course.description) + '</p>' +
+                    '<ul class="lessons-list" id="lessons-' + escapeHtml(course.id) + '"></ul>' +
+                    chatButtonHtml +
+                    (course.resources && course.resources.length ? '<div class="course-resources"><div class="res-label">Resources</div><div id="resources-' + escapeHtml(course.id) + '"></div></div>' : '') +
+                    '</div>';
+                var list = card.querySelector('.lessons-list');
+                course.lessons.forEach(function(lesson) {
+                    var li = document.createElement('li');
+                    li.className = 'lesson-item';
+                    li.innerHTML = '<span class="title">' + escapeHtml(lesson.title) + '</span>' +
+                        '<a href="lesson.html?course=' + encodeURIComponent(course.id) + '&lesson=' + encodeURIComponent(lesson.id) + '" class="btn-open">Open lesson</a>';
+                    list.appendChild(li);
+                });
+                if (course.resources && course.resources.length) {
+                    var resContainer = card.querySelector('#resources-' + course.id);
+                    course.resources.forEach(function(res) {
+                        var div = document.createElement('div');
+                        div.className = 'resource-item';
+                        div.innerHTML = '<span class="title">' + escapeHtml(res.title) + '</span>' +
+                            '<div class="actions">' +
+                            '<a href="' + escapeHtml(res.file) + '" target="_blank" rel="noopener" class="btn-open">Open</a>' +
+                            '<button type="button" class="btn-save" id="save-' + escapeHtml(course.id) + '-' + escapeHtml(res.id) + '" data-course="' + escapeHtml(course.id) + '" data-resource="' + escapeHtml(res.id) + '" data-title="' + escapeHtml(res.title) + '" data-file="' + escapeHtml(res.file) + '">Save for offline</button>' +
+                            '</div>';
+                        resContainer.appendChild(div);
+                    });
+                }
+                container.appendChild(card);
+            });
+
+            EduBridgeDB.getDownloads().then(function(downloads) {
+                downloads.forEach(function(d) {
+                    var btn = document.getElementById('save-' + d.courseId + '-' + d.lessonId);
+                    if (btn) {
+                        btn.textContent = 'Saved for offline';
+                        btn.disabled = true;
+                        btn.classList.add('saved');
+                    }
+                });
+            }).catch(function() {});
+
+            document.getElementById('courses-container').addEventListener('click', function(e) {
+                var btn = e.target.closest('.btn-save');
+                if (!btn || btn.disabled) return;
+                var courseId = btn.getAttribute('data-course');
+                var resourceId = btn.getAttribute('data-resource');
+                var title = btn.getAttribute('data-title');
+                var file = btn.getAttribute('data-file');
+                if (!courseId || !resourceId) return;
+                btn.disabled = true;
+                var courseName = (courses.find(function(c) { return c.id === courseId; }) || {}).title || courseId;
+                var record = { courseId: courseId, lessonId: resourceId, title: title, courseName: courseName, videoUrl: file };
+                EduBridgeDB.addDownload(record).then(function() {
+                    btn.textContent = 'Saved for offline';
+                    btn.classList.add('saved');
+                    if ('caches' in window) {
+                        var url = new URL(file, window.location.href).href;
+                        caches.open('edubridge-lessons-v1').then(function(cache) { return cache.add(url); }).catch(function() {});
+                    }
+                }).catch(function() {
+                    btn.disabled = false;
+                });
+            });
+
+            function escapeHtml(s) {
+                var div = document.createElement('div');
+                div.textContent = s;
+                return div.innerHTML;
+            }
+
+            // ---- Exam Results Graph ----
+            function renderExamGraph() {
+                var wrap = document.getElementById('exam-graph-wrap');
+                if (!wrap) return;
+
+                // Read from localStorage (reliable) + IndexedDB (if available)
+                function getResults() {
+                    var lsResults = [];
+                    try {
+                        lsResults = JSON.parse(localStorage.getItem('edubridge_exam_results') || '[]');
+                    } catch(e) {}
+
+                    if (window.EduBridgeDB && EduBridgeDB.getExamResults) {
+                        return EduBridgeDB.getExamResults().then(function(dbResults) {
+                            // Merge: prefer IndexedDB, fall back to localStorage
+                            var merged = dbResults && dbResults.length ? dbResults : lsResults;
+                            merged.sort(function(a, b) { return (a.completedAt || 0) - (b.completedAt || 0); });
+                            return merged;
+                        }).catch(function() {
+                            lsResults.sort(function(a, b) { return (a.completedAt || 0) - (b.completedAt || 0); });
+                            return lsResults;
+                        });
+                    }
+                    lsResults.sort(function(a, b) { return (a.completedAt || 0) - (b.completedAt || 0); });
+                    return Promise.resolve(lsResults);
+                }
+
+                getResults().then(function(results) {
+                    if (!results || results.length === 0) {
+                        wrap.innerHTML = '<p style="color:var(--text-light);font-size:0.9rem;text-align:center;padding:16px 0;">No exam results yet. Take an exam to see your progress here.</p>';
+                        return;
+                    }
+                    // Show last 10
+                    var data = results.slice(-10);
+                    var W = wrap.clientWidth || 560;
+                    var H = 220;
+                    var padL = 40, padR = 16, padT = 16, padB = 56;
+                    var chartW = W - padL - padR;
+                    var chartH = H - padT - padB;
+                    var barW = Math.max(20, Math.floor(chartW / data.length) - 8);
+
+                    var bars = data.map(function(r, i) {
+                        var x = padL + i * (chartW / data.length) + (chartW / data.length - barW) / 2;
+                        var barH = Math.round((r.percentage / 100) * chartH);
+                        var y = padT + chartH - barH;
+                        var color = r.percentage >= 80 ? '#4EE0A8' : r.percentage >= 50 ? '#FF6B35' : '#fa5252';
+                        var label = r.examTitle.length > 10 ? r.examTitle.substring(0, 9) + '…' : r.examTitle;
+                        var date = new Date(r.completedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+                        return { x: x, y: y, barH: barH, color: color, label: label, date: date, pct: r.percentage };
+                    });
+
+                    var svgBars = bars.map(function(b) {
+                        return '<rect x="' + b.x + '" y="' + b.y + '" width="' + barW + '" height="' + b.barH + '" fill="' + b.color + '" rx="4" aria-label="' + b.label + ': ' + b.pct + '%">' +
+                            '<title>' + b.label + ' — ' + b.pct + '% (' + b.date + ')</title></rect>' +
+                            '<text x="' + (b.x + barW/2) + '" y="' + (b.y - 5) + '" text-anchor="middle" font-size="11" fill="#495057" font-family="Inter,sans-serif">' + b.pct + '%</text>';
+                    }).join('');
+
+                    var svgLabels = bars.map(function(b) {
+                        return '<text x="' + (b.x + barW/2) + '" y="' + (H - padB + 16) + '" text-anchor="middle" font-size="10" fill="#6c757d" font-family="Inter,sans-serif">' + b.label + '</text>' +
+                            '<text x="' + (b.x + barW/2) + '" y="' + (H - padB + 30) + '" text-anchor="middle" font-size="9" fill="#adb5bd" font-family="Inter,sans-serif">' + b.date + '</text>';
+                    }).join('');
+
+                    // Y axis lines
+                    var yLines = [0, 25, 50, 75, 100].map(function(v) {
+                        var y = padT + chartH - Math.round((v / 100) * chartH);
+                        return '<line x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '" stroke="#e9ecef" stroke-width="1"/>' +
+                            '<text x="' + (padL - 4) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="#adb5bd" font-family="Inter,sans-serif">' + v + '</text>';
+                    }).join('');
+
+                    wrap.innerHTML =
+                        '<div style="font-size:0.8rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">Score History (last ' + data.length + ' exams)</div>' +
+                        '<svg width="100%" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" style="overflow:visible">' +
+                            yLines + svgBars + svgLabels +
+                        '</svg>';
+                }).catch(function(err) {
+                    console.warn('Exam results error:', err);
+                    wrap.innerHTML = '<p style="color:var(--text-light);font-size:0.9rem;text-align:center;padding:16px 0;">No exam results yet. Take an exam to see your progress here.</p>';
+                });
+            }
+
+            renderExamGraph();
+            setTimeout(renderExamGraph, 1000);
+            // Re-render after a short delay in case IndexedDB is still initialising
+            setTimeout(renderExamGraph, 800);
+        })();
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmnz_IAGyP4v10M2KivpIeSuRkpuqpbxI",
+            authDomain: "edu-bridge-e5ca8.firebaseapp.com",
+            projectId: "edu-bridge-e5ca8",
+            storageBucket: "edu-bridge-e5ca8.firebasestorage.app",
+            messagingSenderId: "1056859794803",
+            appId: "1:1056859794803:web:0895fc9f615159dcefa906",
+            measurementId: "G-J1K1LKPEBZ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const container = document.getElementById('quizzes-container');
+        const quizSyncEl = document.getElementById('quiz-sync-indicator');
+        const chatOverlay = document.getElementById('student-chat-overlay');
+        const chatDrawer = document.getElementById('student-chat-drawer');
+        const chatTitleEl = document.getElementById('student-chat-title');
+        const chatMessagesEl = document.getElementById('student-chat-messages');
+        const chatInputEl = document.getElementById('student-chat-input');
+        const chatSendBtn = document.getElementById('student-chat-send');
+        const chatCloseBtn = document.getElementById('student-chat-close');
+
+        let currentSubjectId = null;
+        let currentSubjectName = null;
+        let chatUnsubscribe = null;
+        let studentIdentity = null;
+        const chatSyncEl = document.getElementById('student-chat-sync');
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function getLastScoreLabel(quizId) {
+            const key = 'edubridge_quiz_score_' + quizId;
+            try {
+                const raw = localStorage.getItem(key);
+                if (!raw) return 'Not attempted';
+                const data = JSON.parse(raw);
+                if (typeof data.score === 'number' && typeof data.total === 'number' && data.total > 0) {
+                    return data.score + ' / ' + data.total;
+                }
+            } catch (e) {}
+            return 'Not attempted';
+        }
+
+        function updateQuizSyncIndicator() {
+            if (!quizSyncEl) return;
+            let label = 'Not synced yet';
+            try {
+                const ts = parseInt(localStorage.getItem('edubridge_quiz_last_synced') || '', 10);
+                if (ts) {
+                    const d = new Date(ts);
+                    label = 'Last synced at ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+            } catch (e) {}
+            if (!navigator.onLine) {
+                label += ' (offline)';
+            }
+            quizSyncEl.textContent = label;
+        }
+
+        async function loadQuizzes() {
+            if (!container) return;
+            container.innerHTML = '<div class="course-card"><div class="course-card-body"><p class="feature-description">Loading quizzes...</p></div></div>';
+            try {
+                // Keep query simple to avoid index / rules issues
+                const q = query(
+                    collection(db, 'quizzes'),
+                    where('subject', '==', 'Mathematics')
+                );
+                const snap = await getDocs(q);
+                if (snap.empty) {
+                    container.innerHTML = '<div class="course-card"><div class="course-card-body"><p class="feature-description">No quizzes available yet. Your teacher or admin can create quizzes from their portal.</p></div></div>';
+                    return;
+                }
+                container.innerHTML = '';
+
+                const card = document.createElement('div');
+                card.className = 'course-card';
+                const body = document.createElement('div');
+                body.className = 'course-card-body';
+
+                snap.docs.forEach(docSnap => {
+                    const quiz = docSnap.data();
+                    const id = docSnap.id;
+                    const lastScore = getLastScoreLabel(id);
+                    const row = document.createElement('div');
+                    row.className = 'lesson-item';
+                    row.style.marginBottom = '10px';
+                    row.innerHTML = `
+                        <span class="title">
+                            ${escapeHtml(quiz.title || 'Mathematics Quiz')}
+                            <span style="display:block;font-size:0.8rem;color:var(--text-light);margin-top:2px;">
+                                ${escapeHtml(quiz.level || 'Class 9')}
+                            </span>
+                        </span>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <a href="quiz-player.html?quiz=${encodeURIComponent(id)}" class="btn-open">
+                                Start quiz
+                            </a>
+                            <span style="font-size:0.9rem;color:var(--text-medium);min-width:70px;text-align:right;">
+                                ${escapeHtml(lastScore)}
+                            </span>
+                        </div>
+                    `;
+                    body.appendChild(row);
+                });
+
+                card.appendChild(body);
+                container.appendChild(card);
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<div class="course-card"><div class="course-card-body"><p class="feature-description">Error loading quizzes. Please try again.</p></div></div>';
+            }
+        }
+
+        // --- Approved S3 videos injected into subject lesson lists ---
+        // Subject name (from Firestore) → course id used in the DOM
+        const SUBJECT_TO_COURSE_ID = {
+            'mathematics': 'math',
+            'math': 'math',
+            'maths': 'math',
+            'science': 'science',
+            'physics': 'science',
+            'chemistry': 'science',
+            'biology': 'science',
+            'english': 'english',
+        };
+
+        async function loadApprovedVideos() {
+            try {
+                const res = await fetch('/videos');
+                if (!res.ok) return;
+                const videos = await res.json();
+                if (!Array.isArray(videos) || !videos.length) return;
+
+                videos.forEach(video => {
+                    const subjectKey = (video.subject || '').toLowerCase().trim();
+                    const courseId = SUBJECT_TO_COURSE_ID[subjectKey] || subjectKey;
+                    const list = document.getElementById('lessons-' + courseId);
+                    if (!list) return; // subject not in the hardcoded list — skip
+
+                    const li = document.createElement('li');
+                    li.className = 'lesson-item';
+                    li.innerHTML =
+                        '<span class="title">' + escapeHtml(video.title) + '</span>' +
+                        '<a href="video-lesson.html?id=' + encodeURIComponent(video.id) + '" class="btn-open">Open lesson</a>';
+                    list.appendChild(li);
+                });
+            } catch (e) {
+                console.error('Failed to load approved videos:', e);
+            }
+        }
+
+        loadApprovedVideos();
+        loadQuizzes();
+        updateQuizSyncIndicator();
+
+        // --- Subject chat ---
+        function getStudentIdentity() {
+            if (studentIdentity) return studentIdentity;
+            try {
+                const raw = localStorage.getItem('edubridge_student');
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    if (data && data.email && data.name) {
+                        studentIdentity = { name: data.name, email: data.email };
+                        return studentIdentity;
+                    }
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        function openChatDrawer(subjectId, subjectName) {
+            const identity = getStudentIdentity();
+            if (!identity) {
+                alert('Please join as a student first.');
+                return;
+            }
+            currentSubjectId = subjectId;
+            currentSubjectName = subjectName;
+            chatTitleEl.textContent = subjectName + ' chat';
+            chatMessagesEl.innerHTML = '<div class="chat-message-meta">Loading messages...</div>';
+            chatOverlay.style.display = 'block';
+            chatDrawer.style.display = 'flex';
+            chatInputEl.value = '';
+            chatInputEl.focus();
+            updateChatSyncLabel();
+
+            if (chatUnsubscribe) {
+                chatUnsubscribe();
+                chatUnsubscribe = null;
+            }
+
+            const q = query(
+                collection(db, 'chat_messages'),
+                where('subjectId', '==', subjectId)
+            );
+
+            chatUnsubscribe = onSnapshot(q, (snapshot) => {
+                const docs = snapshot.docs
+                    .map(d => d.data())
+                    .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+                chatMessagesEl.innerHTML = '';
+                if (!docs.length) {
+                    chatMessagesEl.innerHTML = '<div class="chat-message-meta">No messages yet. Say hello to your teacher!</div>';
+                    updateChatSyncLabel();
+                    return;
+                }
+                docs.slice(-50).forEach(msg => {
+                    const isStudent = msg.fromRole === 'student';
+                    const item = document.createElement('div');
+                    item.className = 'chat-message' + (isStudent ? ' chat-message-student' : '');
+                    const when = msg.createdAt && msg.createdAt.seconds
+                        ? new Date(msg.createdAt.seconds * 1000)
+                        : null;
+                    const timeLabel = when ? when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                    item.innerHTML = `
+                        <div class="chat-message-bubble">${escapeHtml(msg.text || '')}</div>
+                        <span class="chat-message-meta">${isStudent ? 'You' : 'Teacher'} ${timeLabel ? '• ' + timeLabel : ''}</span>
+                    `;
+                    chatMessagesEl.appendChild(item);
+                });
+                chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+                try {
+                    localStorage.setItem(
+                        'edubridge_chat_last_synced_' + currentSubjectId,
+                        String(Date.now())
+                    );
+                } catch (e) {}
+                updateChatSyncLabel();
+            }, () => {
+                chatMessagesEl.innerHTML = '<div class="chat-message-meta">Failed to load chat. Please try again.</div>';
+            });
+        }
+
+        function updateChatSyncLabel() {
+            if (!chatSyncEl || !currentSubjectId) return;
+            let label = 'Not synced yet';
+            try {
+                const ts = parseInt(
+                    localStorage.getItem('edubridge_chat_last_synced_' + currentSubjectId) || '',
+                    10
+                );
+                if (ts) {
+                    const d = new Date(ts);
+                    label = 'Last synced at ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+            } catch (e) {}
+            if (!navigator.onLine) {
+                label += ' (offline)';
+            }
+            chatSyncEl.textContent = label;
+        }
+
+        function closeChatDrawer() {
+            chatOverlay.style.display = 'none';
+            chatDrawer.style.display = 'none';
+            if (chatUnsubscribe) {
+                chatUnsubscribe();
+                chatUnsubscribe = null;
+            }
+        }
+
+        chatOverlay.addEventListener('click', closeChatDrawer);
+        chatCloseBtn.addEventListener('click', closeChatDrawer);
+
+        document.getElementById('courses-container').addEventListener('click', function (e) {
+            const btn = e.target.closest('.subject-chat-btn');
+            if (!btn) return;
+            const subjectId = btn.getAttribute('data-subject');
+            const subjectName = btn.getAttribute('data-subject-name') || 'Subject';
+            openChatDrawer(subjectId, subjectName);
+        });
+
+        chatSendBtn.addEventListener('click', async function () {
+            const identity = getStudentIdentity();
+            if (!identity || !currentSubjectId) return;
+            const text = (chatInputEl.value || '').trim();
+            if (!text) return;
+            chatSendBtn.disabled = true;
+            try {
+                await addDoc(collection(db, 'chat_messages'), {
+                    subjectId: currentSubjectId,
+                    subjectName: currentSubjectName || '',
+                    studentEmail: identity.email,
+                    studentName: identity.name,
+                    fromRole: 'student',
+                    text,
+                    createdAt: serverTimestamp()
+                });
+                chatInputEl.value = '';
+            } catch (e) {
+                console.error(e);
+            } finally {
+                chatSendBtn.disabled = false;
+            }
+        });
+
+        chatInputEl.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                chatSendBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>

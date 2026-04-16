@@ -1,0 +1,8 @@
+node_modules/
+.env
+server/.env
+server/serviceAccountKey.json
+server/tmp/
+*.mp4
+vid/
+PDFs/

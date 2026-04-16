@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Edu Bridge - Upload Teacher Video</title>
+    <style>
+      :root {
+        --bg: #f5f7f9;
+        --card: #ffffff;
+        --text: #212529;
+        --muted: #6c757d;
+        --primary: #FF6B35;
+        --danger: #dc3545;
+        --ok: #155724;
+        --border: rgba(0, 0, 0, 0.08);
+      }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .wrap {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 28px 16px 60px;
+      }
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+      .brand {
+        font-weight: 800;
+        letter-spacing: 0.2px;
+      }
+      .nav a {
+        margin-left: 10px;
+        text-decoration: none;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .nav a:hover {
+        color: var(--primary);
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 1.35rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .field label {
+        font-size: 0.9rem;
+        font-weight: 650;
+        color: var(--text);
+      }
+      .field input {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        font-size: 1rem;
+      }
+      .field input:focus {
+        outline: none;
+        border-color: rgba(255, 107, 53, 0.6);
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
+      }
+      .actions {
+        margin-top: 14px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      button {
+        border: none;
+        padding: 11px 16px;
+        border-radius: 10px;
+        font-weight: 750;
+        cursor: pointer;
+        font-size: 0.98rem;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .btn-primary:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+      .message {
+        margin-top: 12px;
+        padding: 12px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        display: none;
+      }
+      .message.show {
+        display: block;
+      }
+      .message.ok {
+        border-color: rgba(21, 87, 36, 0.2);
+        color: var(--ok);
+        background: rgba(21, 87, 36, 0.06);
+      }
+      .message.err {
+        border-color: rgba(220, 53, 69, 0.25);
+        color: var(--danger);
+        background: rgba(220, 53, 69, 0.08);
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-top: 6px;
+      }
+      @media (max-width: 720px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .actions {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        button {
+          width: 100%;
+        }
+        .nav a {
+          margin-left: 0;
+          display: inline-block;
+          margin-right: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+<div class="topbar">
+        <div class="brand">Edu Bridge - Upload Lesson</div>
+      </div>
+
+      <div class="card">
+        <h1>Teacher Video Upload</h1>
+        <form id="upload-form">
+          <div class="grid">
+            <div class="field">
+              <label for="title">Title</label>
+              <input id="title" name="title" type="text" required />
+            </div>
+            <div class="field">
+              <label for="subject">Subject</label>
+              <select id="subject" name="subject" required style="padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 1rem; background: #fff;">
+                <option value="">Select a subject</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Science">Science</option>
+                <option value="English">English</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+                <option value="Biology">Biology</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid" style="margin-top: 12px">
+            <div class="field">
+              <label for="createdBy">Created By</label>
+              <input id="createdBy" name="createdBy" type="text" required />
+            </div>
+            <div class="field">
+              <label for="video">Video file</label>
+              <input id="video" name="video" type="file" accept="video/*" required />
+              <div class="hint">Uploads to S3 first, then saves a pending record in Firestore.</div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn-primary" id="upload-btn" type="submit">Upload</button>
+          </div>
+        </form>
+
+        <div id="upload-message" class="message" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+      (function () {
+        try {
+          const params = new URLSearchParams(window.location.search || "");
+          const title = params.get("title");
+          const subject = params.get("subject");
+          const createdBy = params.get("createdBy");
+          if (title) document.getElementById("title").value = title;
+          if (subject) document.getElementById("subject").value = subject;
+          if (createdBy) document.getElementById("createdBy").value = createdBy;
+        } catch (e) {}
+      })();
+    </script>
+  </body>
+</html>
+

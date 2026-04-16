@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pending Video Requests - Admin</title>
+  <style>
+    :root {
+      --bg: #f5f7f9;
+      --card: #ffffff;
+      --text: #212529;
+      --muted: #6c757d;
+      --primary: #FF6B35;
+      --border: rgba(0, 0, 0, 0.08);
+    }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 16px 60px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .brand {
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    h1 {
+      margin: 0 0 20px;
+      font-size: 1.4rem;
+    }
+    .message {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .message.show { display: block; }
+    .message.ok { background: rgba(21,87,36,0.1); color: #155724; }
+    .message.err { background: rgba(220,53,69,0.1); color: #dc3545; }
+    .videos { display: flex; flex-direction: column; gap: 16px; }
+    .video-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      background: white;
+    }
+    .video-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .video-title { font-size: 1.1rem; font-weight: 600; margin: 0; }
+    .status { padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+    .status.pending { background: #fff3cd; color: #856404; }
+    .video-meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 12px; }
+    video { width: 100%; max-height: 300px; border-radius: 8px; }
+    .actions { margin-top: 12px; text-align: right; }
+    button { 
+      padding: 8px 16px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-left: 8px; 
+    }
+    .approve { background: #28a745; color: white; }
+    .reject { background: #dc3545; color: white; }
+    .loading { text-align: center; padding: 40px; color: var(--muted); }
+    @media (max-width: 768px) { .video-header { flex-direction: column; align-items: flex-start; gap: 8px; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">Admin - Pending Video Requests</div>
+      <a href="index.html" style="color: var(--muted);">← Back to Dashboard</a>
+    </div>
+
+    <div class="card">
+      <h1>Pending Video Requests</h1>
+      <div id="message" class="message"></div>
+      <div id="videos" class="videos">
+        <div class="loading">Loading pending videos...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setMessage(text, isOk) {
+      const el = document.getElementById('message');
+      el.textContent = text;
+      el.className = 'message ' + (isOk ? 'ok' : 'err') + ' show';
+      setTimeout(() => el.classList.remove('show'), 5000);
+    }
+
+    async function loadVideos() {
+      try {
+        const res = await fetch('/admin/videos');
+        const videos = await res.json();
+        const container = document.getElementById('videos');
+        
+        if (!videos || videos.length === 0) {
+          container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">No pending videos</div>';
+          return;
+        }
+
+        container.innerHTML = videos.map(v => `
+          <div class="video-card">
+            <div class="video-header">
+              <h3 class="video-title">${v.title}</h3>
+              <span class="status pending">Pending</span>
+            </div>
+            <p class="video-meta">${v.subject} by ${v.createdBy}</p>
+            <video controls src="${v.url}" preload="metadata"></video>
+            <div class="actions">
+              <button class="approve" onclick="approveVideo('${v.id}')">✅ Approve</button>
+              <button class="reject" onclick="rejectVideo('${v.id}')">❌ Reject</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        document.getElementById('videos').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">Error loading videos</div>';
+        setMessage('Failed to load videos', false);
+        console.error(err);
+      }
+    }
+
+    async function approveVideo(id) {
+      try {
+        const res = await fetch(`/admin/approve/${id}`, {method: 'POST'});
+        const data = await res.json();
+        if (data.success) {
+          setMessage('Video approved!', true);
+          loadVideos();
+        } else {
+          setMessage('Approval failed', false);
+        }
+      } catch (err) {
+        setMessage('Error approving video', false);
+        console.error(err);
+      }
+    }
+
+    async function rejectVideo(id) {
+      try {
+        const res = await fetch(`/admin/reject/${id}`, {method: 'POST'});
+        const data = await res.json();
+        if (data.success) {
+          setMessage('Video rejected', true);
+          loadVideos();
+        } else {
+          setMessage('Rejection failed', false);
+        }
+      } catch (err) {
+        setMessage('Error rejecting video', false);
+        console.error(err);
+      }
+    }
+
+    loadVideos();
+  </script>
+</body>
+</html>
+

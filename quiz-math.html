@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Quiz - Linear, Quadratic & Algebra | Edu Bridge</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .quiz-page { min-height: 100vh; background: var(--bg-light); }
+        .quiz-main { padding: 32px 0 60px; }
+        .quiz-card {
+            max-width: 760px;
+            margin: 0 auto;
+            background: var(--bg-white);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            padding: 32px 24px;
+        }
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .quiz-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        .quiz-tag {
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #E8F8F5;
+            color: var(--primary-teal-dark);
+            font-weight: 600;
+        }
+        .quiz-meta {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+        .question {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .question:last-of-type {
+            border-bottom: none;
+            margin-bottom: 16px;
+        }
+        .question-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+        .question-topic {
+            display: inline-block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-light);
+            margin-bottom: 6px;
+        }
+        .options {
+            list-style: none;
+        }
+        .option {
+            margin-bottom: 6px;
+        }
+        .option label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .option input {
+            accent-color: var(--primary-teal);
+        }
+        .option label:hover {
+            background: var(--bg-light);
+        }
+        .quiz-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .quiz-actions .btn {
+            padding: 10px 20px;
+            font-size: 0.95rem;
+        }
+        .quiz-result {
+            margin-top: 20px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            background: #D4EDDA;
+            color: #155724;
+            font-size: 0.95rem;
+            display: none;
+        }
+        .quiz-result.show {
+            display: block;
+        }
+        .quiz-result strong {
+            font-weight: 700;
+        }
+        .quiz-note {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+        @media (max-width: 768px) {
+            .quiz-card {
+                border-radius: 12px;
+                padding: 24px 18px;
+            }
+        }
+    </style>
+</head>
+<body class="quiz-page">
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <svg class="logo-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4L6 10V22L16 28L26 22V10L16 4Z" fill="#4EE0A8"/>
+                        <path d="M16 8L10 11V21L16 24L22 21V11L16 8Z" fill="#FFFFFF"/>
+                        <circle cx="16" cy="16" r="2" fill="#4EE0A8"/>
+                    </svg>
+                    <span class="logo-text">Edu Bridge</span>
+                </a>
+                <div class="header-actions">
+                    <a href="student.html" class="student-login">My Learning</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="quiz-main">
+        <div class="container">
+            <div class="quiz-card">
+                <div class="quiz-header">
+                    <div>
+                        <div class="quiz-title">Mathematics Quiz – Class 9</div>
+                        <div class="quiz-meta">Topics: Linear Equations, Quadratic Equations, Basic Algebra</div>
+                    </div>
+                    <span class="quiz-tag">Mathematics • 9th</span>
+                </div>
+
+                <form id="math-quiz-form">
+                    <!-- Q1 Linear equation -->
+                    <div class="question">
+                        <div class="question-topic">Linear equations</div>
+                        <div class="question-title">1. Which of the following is a linear equation in one variable?</div>
+                        <ul class="options">
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q1" value="a">
+                                    <span>3x + 5 = 11</span>
+                                </label>
+                            </li>
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q1" value="b">
+                                    <span>x² + 3x = 0</span>
+                                </label>
+                            </li>
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q1" value="c">
+                                    <span>x³ - 1 = 0</span>
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Q2 Linear equation solution -->
+                    <div class="question">
+                        <div class="question-topic">Linear equations</div>
+                        <div class="question-title">2. Solve the equation 2x − 7 = 5. What is x?</div>
+                        <ul class="options">
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q2" value="a">
+                                    <span>x = 1</span>
+                                </label>
+                            </li>
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q2" value="b">
+                                    <span>x = 6</span>
+                                </label>
+                            </li>
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q2" value="c">
+                                    <span>x = 12</span>
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Q3 Algebraic expression -->
+                    <div class="question">
+                        <div class="question-topic">Algebra</div>
+                        <div class="question-title">3. Which of the following is an algebraic expression?</div>
+                        <ul class="options">
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q3" value="a">
+                                    <span>7 + x</span>
+                                </label>
+                            </li>
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q3" value="b">
+                                    <span>7 × 3</span>
+                                </label>
+                            </li>
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q3" value="c">
+                                    <span>21</span>
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Q4 Quadratic equation definition -->
+                    <div class="question">
+                        <div class="question-topic">Quadratic equations</div>
+                        <div class="question-title">4. A quadratic equation in x is an equation of the form:</div>
+                        <ul class="options">
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q4" value="a">
+                                    <span>ax + b = 0, where a ≠ 0</span>
+                                </label>
+                            </li>
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q4" value="b">
+                                    <span>ax² + bx + c = 0, where a ≠ 0</span>
+                                </label>
+                            </li>
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q4" value="c">
+                                    <span>x³ + ax² + bx + c = 0</span>
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Q5 Roots of quadratic -->
+                    <div class="question">
+                        <div class="question-topic">Quadratic equations</div>
+                        <div class="question-title">5. For the quadratic equation x² − 9 = 0, the roots are:</div>
+                        <ul class="options">
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q5" value="a">
+                                    <span>3 and −3</span>
+                                </label>
+                            </li>
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q5" value="b">
+                                    <span>9 and −9</span>
+                                </label>
+                            </li>
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q5" value="c">
+                                    <span>0 and 9</span>
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Q6 Simple algebra simplification -->
+                    <div class="question">
+                        <div class="question-topic">Algebra</div>
+                        <div class="question-title">6. Simplify: 2x + 3x − x</div>
+                        <ul class="options">
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q6" value="a">
+                                    <span>4x</span>
+                                </label>
+                            </li>
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q6" value="b">
+                                    <span>5x</span>
+                                </label>
+                            </li>
+                            <li class="option">
+                                <label>
+                                    <input type="radio" name="q6" value="c">
+                                    <span>3x</span>
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="quiz-actions">
+                        <button type="submit" class="btn btn-primary">Submit Quiz</button>
+                        <button type="button" id="btn-reset-quiz" class="btn btn-secondary">Reset</button>
+                    </div>
+                </form>
+
+                <div id="quiz-result" class="quiz-result"></div>
+                <div class="quiz-note">
+                    Your latest score for this quiz is saved on this device so you can check your progress even when offline.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="offline.js"></script>
+    <script>
+        (function () {
+            var correctAnswers = {
+                q1: "a",
+                q2: "b",
+                q3: "a",
+                q4: "b",
+                q5: "a",
+                q6: "a"
+            };
+
+            var form = document.getElementById("math-quiz-form");
+            var resultBox = document.getElementById("quiz-result");
+            var resetBtn = document.getElementById("btn-reset-quiz");
+
+            var STORAGE_KEY = "edubridge_math_quiz_score_v1";
+
+            function loadSavedScore() {
+                try {
+                    var raw = localStorage.getItem(STORAGE_KEY);
+                    if (!raw) return;
+                    var data = JSON.parse(raw);
+                    if (typeof data.score === "number" && typeof data.total === "number") {
+                        showResultMessage(data.score, data.total, true);
+                    }
+                } catch (e) {}
+            }
+
+            function saveScore(score, total) {
+                try {
+                    localStorage.setItem(
+                        STORAGE_KEY,
+                        JSON.stringify({
+                            score: score,
+                            total: total,
+                            attemptedAt: Date.now()
+                        })
+                    );
+                } catch (e) {}
+            }
+
+            function showResultMessage(score, total, fromStorage) {
+                var percent = Math.round((score / total) * 100);
+                var message =
+                    "You scored <strong>" +
+                    score +
+                    " / " +
+                    total +
+                    "</strong> (" +
+                    percent +
+                    "%) in this quiz.";
+                if (fromStorage) {
+                    message =
+                        "Last saved attempt: " +
+                        message +
+                        " Take the quiz again to improve your score.";
+                }
+                resultBox.innerHTML = message;
+                resultBox.classList.add("show");
+            }
+
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                var total = Object.keys(correctAnswers).length;
+                var score = 0;
+
+                Object.keys(correctAnswers).forEach(function (q) {
+                    var checked = form.querySelector('input[name="' + q + '"]:checked');
+                    if (checked && checked.value === correctAnswers[q]) {
+                        score += 1;
+                    }
+                });
+
+                showResultMessage(score, total, false);
+                saveScore(score, total);
+            });
+
+            resetBtn.addEventListener("click", function () {
+                form.reset();
+                resultBox.classList.remove("show");
+            });
+
+            loadSavedScore();
+        })();
+    </script>
+</body>
+</html>
+

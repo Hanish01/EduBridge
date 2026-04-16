@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Exam - Edu Bridge</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background: var(--bg-light); min-height: 100vh; }
+        .page-wrap { max-width: 760px; margin: 0 auto; padding: 32px 24px 80px; }
+
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-dark); }
+        .page-header p { color: var(--text-medium); margin-top: 4px; font-size: 0.95rem; }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .card-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #FF6B35;
+            margin-bottom: 18px;
+        }
+
+        .field { margin-bottom: 16px; }
+        .field label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+        .field input, .field select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.15s;
+        }
+        .field input:focus, .field select:focus {
+            outline: none;
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 3px rgba(255,107,53,0.12);
+        }
+        .field-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+        /* Question builder */
+        .questions-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
+        .question-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 18px;
+            position: relative;
+        }
+        .question-block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .question-num {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #FF6B35;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .btn-remove-q {
+            background: none;
+            border: none;
+            color: #adb5bd;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: color 0.15s, background 0.15s;
+        }
+        .btn-remove-q:hover { color: #dc3545; background: #fde8ea; }
+
+        .q-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            margin-bottom: 12px;
+            background: #fff;
+        }
+        .q-input:focus { outline: none; border-color: #FF6B35; box-shadow: 0 0 0 3px rgba(255,107,53,0.12); }
+
+        .options-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+        .option-row { display: flex; align-items: center; gap: 10px; }
+        .option-label {
+            width: 28px; height: 28px;
+            border-radius: 6px;
+            background: #e9ecef;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 700; color: #6c757d;
+            flex-shrink: 0;
+        }
+        .option-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            background: #fff;
+        }
+        .option-input:focus { outline: none; border-color: #4EE0A8; box-shadow: 0 0 0 3px rgba(78,224,168,0.15); }
+
+        .correct-row { display: flex; align-items: center; gap: 10px; }
+        .correct-row label { font-size: 0.82rem; font-weight: 600; color: var(--text-medium); white-space: nowrap; }
+        .correct-select {
+            padding: 7px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-family: inherit;
+            background: #fff;
+        }
+        .correct-select:focus { outline: none; border-color: #4EE0A8; }
+
+        .btn-add-q {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 20px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #6c757d;
+            cursor: pointer;
+            width: 100%;
+            justify-content: center;
+            transition: border-color 0.15s, color 0.15s, background 0.15s;
+        }
+        .btn-add-q:hover { border-color: #FF6B35; color: #FF6B35; background: #fff8f5; }
+
+        .q-count-note { font-size: 0.8rem; color: #6c757d; margin-top: 8px; text-align: center; }
+
+        .btn-save {
+            width: 100%;
+            padding: 14px;
+            background: #FF6B35;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+        .btn-save:hover { background: #e55a2b; }
+        .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .save-msg { text-align: center; font-size: 0.9rem; margin-top: 10px; min-height: 20px; }
+
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--text-medium); text-decoration: none; font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        .back-link:hover { color: #FF6B35; }
+
+        @media (max-width: 600px) {
+            .field-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+        <a href="teacher-portal.html" class="back-link">← Back to Teacher Portal</a>
+
+        <div class="page-header">
+            <h1>📝 Create Exam</h1>
+            <p>Add questions one by one. Students will get a random selection from your question bank.</p>
+        </div>
+
+        <!-- Exam settings -->
+        <div class="card">
+            <div class="card-title">Exam Settings</div>
+            <div class="field">
+                <label>Exam Title</label>
+                <input type="text" id="exam-title" placeholder="e.g. Class 9 Maths Mid-Term">
+            </div>
+            <div class="field">
+                <label>Subject</label>
+                <select id="exam-subject">
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Science">Science</option>
+                    <option value="English">English</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Biology">Biology</option>
+                </select>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label>Questions to show student</label>
+                    <input type="number" id="exam-show" min="1" value="5">
+                </div>
+                <div class="field">
+                    <label>Time per question (sec)</label>
+                    <input type="number" id="exam-time" min="10" max="120" value="30">
+                </div>
+                <div class="field">
+                    <label>Max violations allowed</label>
+                    <input type="number" id="exam-violations" min="1" max="10" value="3">
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions -->
+        <div class="card">
+            <div class="card-title">Questions</div>
+            <div class="questions-list" id="questions-list"></div>
+            <button class="btn-add-q" onclick="addQuestion()">＋ Add Question</button>
+            <div class="q-count-note" id="q-count-note">0 questions added</div>
+        </div>
+
+        <button class="btn-save" id="btn-save" onclick="saveExam()">💾 Save Exam to Firebase</button>
+        <div class="save-msg" id="save-msg"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmnz_IAGyP4v10M2KivpIeSuRkpuqpbxI",
+            authDomain: "edu-bridge-e5ca8.firebaseapp.com",
+            projectId: "edu-bridge-e5ca8",
+            storageBucket: "edu-bridge-e5ca8.firebasestorage.app",
+            messagingSenderId: "1056859794803",
+            appId: "1:1056859794803:web:0895fc9f615159dcefa906"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let questionCount = 0;
+
+        window.addQuestion = function() {
+            questionCount++;
+            const list = document.getElementById('questions-list');
+            const id = 'q-' + questionCount;
+            const block = document.createElement('div');
+            block.className = 'question-block';
+            block.id = id;
+            block.innerHTML =
+                '<div class="question-block-header">' +
+                    '<span class="question-num">Question ' + questionCount + '</span>' +
+                    '<button class="btn-remove-q" onclick="removeQuestion(\'' + id + '\')" title="Remove">✕</button>' +
+                '</div>' +
+                '<input class="q-input" type="text" placeholder="Enter your question here..." data-field="text">' +
+                '<div class="options-grid">' +
+                    optionRow('A', 1) +
+                    optionRow('B', 2) +
+                    optionRow('C', 3) +
+                    optionRow('D', 4) +
+                '</div>' +
+                '<div class="correct-row">' +
+                    '<label>Correct answer:</label>' +
+                    '<select class="correct-select" data-field="correct">' +
+                        '<option value="0">Option A</option>' +
+                        '<option value="1">Option B</option>' +
+                        '<option value="2">Option C</option>' +
+                        '<option value="3">Option D</option>' +
+                    '</select>' +
+                '</div>';
+            list.appendChild(block);
+            updateCount();
+            block.querySelector('.q-input').focus();
+        };
+
+        function optionRow(letter, num) {
+            return '<div class="option-row">' +
+                '<div class="option-label">' + letter + '</div>' +
+                '<input class="option-input" type="text" placeholder="Option ' + letter + '" data-option="' + (num-1) + '">' +
+            '</div>';
+        }
+
+        window.removeQuestion = function(id) {
+            var el = document.getElementById(id);
+            if (el) el.remove();
+            renumberQuestions();
+            updateCount();
+        };
+
+        function renumberQuestions() {
+            document.querySelectorAll('.question-block').forEach(function(block, i) {
+                block.querySelector('.question-num').textContent = 'Question ' + (i + 1);
+            });
+        }
+
+        function updateCount() {
+            var n = document.querySelectorAll('.question-block').length;
+            document.getElementById('q-count-note').textContent = n + ' question' + (n !== 1 ? 's' : '') + ' added';
+        }
+
+        window.saveExam = async function() {
+            const btn = document.getElementById('btn-save');
+            const msg = document.getElementById('save-msg');
+
+            const title = document.getElementById('exam-title').value.trim();
+            const subject = document.getElementById('exam-subject').value;
+            const questionsToShow = parseInt(document.getElementById('exam-show').value, 10);
+            const timePerQuestion = parseInt(document.getElementById('exam-time').value, 10);
+            const maxViolations = parseInt(document.getElementById('exam-violations').value, 10);
+
+            if (!title) {
+                msg.textContent = 'Please enter an exam title.';
+                msg.style.color = '#dc3545';
+                return;
+            }
+
+            const blocks = document.querySelectorAll('.question-block');
+            if (blocks.length < 1) {
+                msg.textContent = 'Please add at least one question.';
+                msg.style.color = '#dc3545';
+                return;
+            }
+
+            const questions = [];
+            let valid = true;
+            blocks.forEach(function(block, i) {
+                const text = block.querySelector('[data-field="text"]').value.trim();
+                const optionInputs = block.querySelectorAll('[data-option]');
+                const options = Array.from(optionInputs).map(function(inp) { return inp.value.trim(); });
+                const correctIndex = parseInt(block.querySelector('[data-field="correct"]').value, 10);
+
+                if (!text || options.some(function(o) { return !o; })) {
+                    msg.textContent = 'Question ' + (i+1) + ' is incomplete. Fill in the question and all 4 options.';
+                    msg.style.color = '#dc3545';
+                    valid = false;
+                    return;
+                }
+                questions.push({ text, options, correctIndex });
+            });
+
+            if (!valid) return;
+
+            if (questionsToShow > questions.length) {
+                msg.textContent = 'Questions to show (' + questionsToShow + ') cannot exceed total questions (' + questions.length + ').';
+                msg.style.color = '#dc3545';
+                return;
+            }
+
+            btn.disabled = true;
+            msg.textContent = 'Saving...';
+            msg.style.color = '#666';
+
+            let teacherData = null;
+            try { teacherData = JSON.parse(localStorage.getItem('teacher_login') || '{}'); } catch(e) {}
+
+            try {
+                await addDoc(collection(db, 'exams'), {
+                    title, subject, questionsToShow, timePerQuestion, maxViolations,
+                    questions,
+                    createdBy: teacherData?.email || '',
+                    createdByName: teacherData?.name || '',
+                    createdAt: serverTimestamp()
+                });
+                msg.textContent = '✅ Exam saved! Students can now see it on the exam list.';
+                msg.style.color = '#155724';
+                // Reset form
+                document.getElementById('exam-title').value = '';
+                document.getElementById('questions-list').innerHTML = '';
+                questionCount = 0;
+                updateCount();
+            } catch(err) {
+                console.error(err);
+                msg.textContent = 'Error: ' + err.message;
+                msg.style.color = '#dc3545';
+            } finally {
+                btn.disabled = false;
+            }
+        };
+
+        // Add first question automatically
+        window.addQuestion();
+    </script>
+</body>
+</html>
