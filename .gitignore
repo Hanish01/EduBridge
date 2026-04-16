@@ -6,3 +6,4 @@ server/tmp/
 *.mp4
 vid/
 PDFs/
+.kiro/
