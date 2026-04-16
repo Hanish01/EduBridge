@@ -21,7 +21,14 @@ function initFirebaseAdmin() {
   if (!projectId) throw new Error("Missing FIREBASE_PROJECT_ID in environment.");
 
   const json = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+  const jsonBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
   const pathToJson = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+
+  if (jsonBase64) {
+    const parsed = JSON.parse(Buffer.from(jsonBase64, 'base64').toString('utf8'));
+    admin.initializeApp({ credential: admin.credential.cert(parsed), projectId });
+    return;
+  }
 
   if (json) {
     let parsed;
@@ -29,6 +36,9 @@ function initFirebaseAdmin() {
       parsed = JSON.parse(json);
     } catch {
       throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON.");
+    }
+    if (parsed.private_key) {
+      parsed.private_key = parsed.private_key.replace(/\\n/g, '\n');
     }
     admin.initializeApp({
       credential: admin.credential.cert(parsed),
