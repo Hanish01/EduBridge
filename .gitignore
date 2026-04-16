@@ -1,5 +1,6 @@
 node_modules/
 .env
+.env.example
 server/.env
 server/serviceAccountKey.json
 server/tmp/
@@ -7,3 +8,4 @@ server/tmp/
 vid/
 PDFs/
 .kiro/
+TODO.md
