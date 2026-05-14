@@ -469,8 +469,17 @@
                 </section>
 
                 <aside>
-                    <!-- Section 2: Create Quiz -->
-                    <h2 class="section-title">🧮 Create Practice Quiz</h2>
+                    <!-- Section 2: Upload Notes -->
+                    <h2 class="section-title">📄 Share Notes</h2>
+                    <div class="upload-card" style="text-align:center;padding:24px 20px;">
+                        <a href="upload-notes.html" class="btn-upload" style="display:inline-block;font-size:1rem;padding:14px 28px;">
+                            📄 Upload PDF Notes
+                        </a>
+                        <p style="margin-top:12px;color:var(--text-medium);font-size:0.9rem;">Upload PDFs to S3 — students can download them offline.</p>
+                    </div>
+
+                    <!-- Section 3: Create Quiz -->
+                    <h2 class="section-title" style="margin-top:24px;">🧮 Create Practice Quiz</h2>
                     <div class="upload-card">
                         <form id="teacher-quiz-form">
                             <div class="form-group">
@@ -528,13 +537,13 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const chatOverlay = document.getElementById('teacher-chat-overlay');
-        const chatDrawer = document.getElementById('teacher-chat-drawer');
-        const chatClose = document.getElementById('teacher-chat-close');
-        const chatSubjectSelect = document.getElementById('teacher-chat-subject');
-        const chatMessagesEl = document.getElementById('teacher-chat-messages');
-        const chatInputEl = document.getElementById('teacher-chat-input');
-        const chatSendBtn = document.getElementById('teacher-chat-send');
+        const chatOverlay = () => document.getElementById('teacher-chat-overlay');
+        const chatDrawer = () => document.getElementById('teacher-chat-drawer');
+        const chatClose = () => document.getElementById('teacher-chat-close');
+        const chatSubjectSelect = () => document.getElementById('teacher-chat-subject');
+        const chatMessagesEl = () => document.getElementById('teacher-chat-messages');
+        const chatInputEl = () => document.getElementById('teacher-chat-input');
+        const chatSendBtn = () => document.getElementById('teacher-chat-send');
 
         let chatUnsubscribe = null;
         let currentChatSubject = 'math';
@@ -593,39 +602,6 @@
 
         loadUploads();
 
-        // Handle upload
-        document.getElementById('upload-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const uploadBtn = document.getElementById('upload-btn');
-            uploadBtn.disabled = true;
-            uploadBtn.textContent = 'Publishing...';
-            
-            const lessonData = {
-                title: document.getElementById('title').value.trim(),
-                subject: document.getElementById('subject').value,
-                description: document.getElementById('description').value.trim(),
-                videoUrl: document.getElementById('videoUrl').value.trim(),
-                teacherEmail: teacherData.email,
-                teacherName: teacherData.name,
-                status: 'published',
-                createdAt: serverTimestamp()
-            };
-            
-            try {
-                await addDoc(collection(db, 'teacher_lessons'), lessonData);
-                
-                document.getElementById('upload-form').reset();
-                alert('Lesson published successfully!');
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error publishing lesson. Please try again.');
-            }
-            
-            uploadBtn.disabled = false;
-            uploadBtn.textContent = '📤 Publish Lesson';
-        });
-
         // Simple quiz creation for this teacher
         function parseQuizQuestions(raw) {
             const lines = (raw || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
@@ -644,7 +620,8 @@
             return questions;
         }
 
-        document.getElementById('teacher-quiz-form').addEventListener('submit', async function (e) {
+        const quizFormEl = document.getElementById('teacher-quiz-form');
+        if (quizFormEl) quizFormEl.addEventListener('submit', async function (e) {
             e.preventDefault();
             const titleEl = document.getElementById('quiz-title');
             const subjectEl = document.getElementById('quiz-subject');
@@ -699,106 +676,121 @@
 
         // Teacher chat sidebar
         function openChatSidebar() {
-            chatOverlay.style.display = 'block';
-            chatDrawer.style.display = 'flex';
-            chatInputEl.value = '';
+            var overlay = document.getElementById('teacher-chat-overlay');
+            var drawer = document.getElementById('teacher-chat-drawer');
+            var input = document.getElementById('teacher-chat-input');
+            if (overlay) overlay.style.display = 'block';
+            if (drawer) drawer.style.display = 'flex';
+            if (input) input.value = '';
             attachChatListener();
         }
 
         function closeChatSidebar() {
-            chatOverlay.style.display = 'none';
-            chatDrawer.style.display = 'none';
-            if (chatUnsubscribe) {
-                chatUnsubscribe();
-                chatUnsubscribe = null;
-            }
+            var overlay = document.getElementById('teacher-chat-overlay');
+            var drawer = document.getElementById('teacher-chat-drawer');
+            if (overlay) overlay.style.display = 'none';
+            if (drawer) drawer.style.display = 'none';
+            if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
         }
 
         function attachChatListener() {
-            if (chatUnsubscribe) {
-                chatUnsubscribe();
-                chatUnsubscribe = null;
-            }
+            if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+            var messagesEl = document.getElementById('teacher-chat-messages');
+            if (messagesEl) messagesEl.innerHTML = '<div class="meta">Loading messages...</div>';
             const subjectId = currentChatSubject;
-            const qChat = query(
-                collection(db, 'chat_messages'),
-                where('subjectId', '==', subjectId)
-            );
-            chatMessagesEl.innerHTML = '<div class="meta">Loading messages...</div>';
+            const qChat = query(collection(db, 'chat_messages'), where('subjectId', '==', subjectId));
             chatUnsubscribe = onSnapshot(qChat, (snapshot) => {
+                var el = document.getElementById('teacher-chat-messages');
+                if (!el) return;
                 const docs = snapshot.docs
                     .map(d => ({ id: d.id, ...d.data() }))
                     .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
-                chatMessagesEl.innerHTML = '';
-                if (!docs.length) {
-                    chatMessagesEl.innerHTML = '<div class="meta">No messages for this subject yet.</div>';
-                    return;
-                }
+                el.innerHTML = '';
+                if (!docs.length) { el.innerHTML = '<div class="meta">No messages for this subject yet.</div>'; return; }
                 docs.slice(-50).forEach(msg => {
                     const isMine = msg.fromRole === 'teacher' && msg.teacherEmail === teacherData.email;
-                    const when = msg.createdAt && msg.createdAt.seconds
-                        ? new Date(msg.createdAt.seconds * 1000)
-                        : null;
+                    const when = msg.createdAt?.seconds ? new Date(msg.createdAt.seconds * 1000) : null;
                     const timeLabel = when ? when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
                     const item = document.createElement('div');
                     item.className = 'chat-message' + (isMine ? ' mine' : '');
-                    item.innerHTML = `
-                        <div class="bubble">${escapeHtml(msg.text || '')}</div>
-                        <span class="meta">${isMine ? 'You' : escapeHtml(msg.studentName || 'Student')} ${timeLabel ? '• ' + timeLabel : ''}</span>
-                    `;
-                    chatMessagesEl.appendChild(item);
+                    item.innerHTML = `<div class="bubble">${escapeHtml(msg.text || '')}</div><span class="meta">${isMine ? 'You' : escapeHtml(msg.studentName || 'Student')} ${timeLabel ? '• ' + timeLabel : ''}</span>`;
+                    el.appendChild(item);
                 });
-                chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+                el.scrollTop = el.scrollHeight;
             }, () => {
-                chatMessagesEl.innerHTML = '<div class="meta">Failed to load messages.</div>';
+                var el = document.getElementById('teacher-chat-messages');
+                if (el) el.innerHTML = '<div class="meta">Failed to load messages.</div>';
             });
         }
 
         document.getElementById('open-chat-sidebar').addEventListener('click', openChatSidebar);
-        chatOverlay.addEventListener('click', closeChatSidebar);
-        chatClose.addEventListener('click', closeChatSidebar);
-        chatSubjectSelect.addEventListener('change', function () {
-            currentChatSubject = this.value || 'math';
-            if (chatDrawer.style.display === 'flex') {
-                attachChatListener();
-            }
-        });
 
-        chatSendBtn.addEventListener('click', async function () {
-            const text = (chatInputEl.value || '').trim();
-            if (!text) return;
-            chatSendBtn.disabled = true;
-            try {
-                await addDoc(collection(db, 'chat_messages'), {
-                    subjectId: currentChatSubject,
-                    subjectName: chatSubjectSelect.options[chatSubjectSelect.selectedIndex].text || '',
-                    studentEmail: '', // generic broadcast or will be visible to all students of this subject
-                    studentName: '',
-                    teacherEmail: teacherData.email,
-                    teacherName: teacherData.name,
-                    fromRole: 'teacher',
-                    text,
-                    createdAt: serverTimestamp()
-                });
-                chatInputEl.value = '';
-            } catch (e) {
-                console.error(e);
-            } finally {
-                chatSendBtn.disabled = false;
-            }
-        });
+        // Defer chat drawer listener attachment so drawer HTML is in DOM
+        setTimeout(function() {
+            var overlay = document.getElementById('teacher-chat-overlay');
+            var close = document.getElementById('teacher-chat-close');
+            var subjectSel = document.getElementById('teacher-chat-subject');
+            var sendBtn = document.getElementById('teacher-chat-send');
+            var inputEl = document.getElementById('teacher-chat-input');
+            var drawer = document.getElementById('teacher-chat-drawer');
 
-        chatInputEl.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                chatSendBtn.click();
-            }
-        });
+            if (overlay) overlay.addEventListener('click', closeChatSidebar);
+            if (close) close.addEventListener('click', closeChatSidebar);
+            if (subjectSel) subjectSel.addEventListener('change', function() {
+                currentChatSubject = this.value || 'math';
+                if (drawer && drawer.style.display === 'flex') attachChatListener();
+            });
+            if (sendBtn) sendBtn.addEventListener('click', async function() {
+                const text = (inputEl ? inputEl.value : '').trim();
+                if (!text) return;
+                sendBtn.disabled = true;
+                try {
+                    await addDoc(collection(db, 'chat_messages'), {
+                        subjectId: currentChatSubject,
+                        subjectName: subjectSel ? subjectSel.options[subjectSel.selectedIndex].text : '',
+                        studentEmail: '', studentName: '',
+                        teacherEmail: teacherData.email,
+                        teacherName: teacherData.name,
+                        fromRole: 'teacher',
+                        text,
+                        createdAt: serverTimestamp()
+                    });
+                    if (inputEl) inputEl.value = '';
+                } catch(e) { console.error(e); }
+                finally { sendBtn.disabled = false; }
+            });
+            if (inputEl) inputEl.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (sendBtn) sendBtn.click(); }
+            });
+        }, 0);
     </script>
-</body>
 
 <!-- Teacher chat drawer markup -->
 <div class="chat-drawer-overlay" id="teacher-chat-overlay"></div>
+<aside class="chat-drawer" id="teacher-chat-drawer">
+    <div class="chat-drawer-header">
+        <div>
+            <div class="chat-drawer-title">Student chats</div>
+            <div class="chat-drawer-subtitle">View questions by subject</div>
+        </div>
+        <button class="chat-close-btn" id="teacher-chat-close" aria-label="Close chat">×</button>
+    </div>
+    <div class="chat-filter">
+        <label for="teacher-chat-subject" style="font-size:0.8rem;color:var(--text-light);">Subject</label>
+        <select id="teacher-chat-subject">
+            <option value="math">Mathematics</option>
+            <option value="science">Science</option>
+            <option value="english">English</option>
+        </select>
+    </div>
+    <div class="chat-messages" id="teacher-chat-messages"></div>
+    <div class="chat-input-row">
+        <input type="text" id="teacher-chat-input" placeholder="Reply to students..." autocomplete="off">
+        <button type="button" id="teacher-chat-send">Send</button>
+    </div>
+</aside>
+</body>
+</html>
 <aside class="chat-drawer" id="teacher-chat-drawer">
     <div class="chat-drawer-header">
         <div>
