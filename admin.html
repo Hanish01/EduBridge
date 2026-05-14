@@ -254,6 +254,7 @@ button:disabled{
     <div class="admin-meta">
       <div><a href="index.html" class="back-link">← Back to home</a></div>
       <div style="margin-top:2px;">Teacher approvals & content overview</div>
+      <div style="margin-top:6px;"><a href="#" onclick="sessionStorage.removeItem('admin_auth');window.location.href='admin-login.html';" style="color:#dc3545;font-size:0.8rem;font-weight:600;">Log out</a></div>
     </div>
   </div>
 </header>
@@ -329,6 +330,12 @@ button:disabled{
 </main>
 
 <script src="offline.js"></script>
+<script>
+// Admin auth guard
+if (sessionStorage.getItem('admin_auth') !== 'true') {
+    window.location.href = 'admin-login.html';
+}
+</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getFirestore, collection, doc, updateDoc, query, orderBy, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
@@ -519,71 +526,3 @@ quizForm.addEventListener("submit", async (e) => {
 </script>
 </body>
 </html>
-
-**Restart server:** `cd server && npm start`
-
-**Button now:** `href="Approved.html"` ✅
-</result>
-</attempt_completion> 
-
-**Button Location:** Line ~170 after `<h2>Dashboard & Video Approvals</h2>`
-
-**Fixed!** 🚀
-</result> 
-</attempt_completion> 
-
-Click **"Approved Videos"** → Approved.html (video list) 🎥
-
-Tested flow complete! Done. 😊
-
-**Quick Test:**
-1. `cd server && npm start`
-2. localhost:3000/admin.html → Click button → Approved.html
-
-Perfect! ✅
-</result>  
-</attempt_completion> 
-
-## 🎯 Task Done
-
-**All Done!** Flow fixed per feedback. Button → Approved.html.
-
-**Final Flow:**
-```
-Admin → "📺 Approved Videos" → Approved.html (clean videos)
-Teacher → Upload → Server → Approved → Admin → Approved.html
-
-**Demo:** `npm start` → admin.html → button works!
-
-Thanks for patience! 🚀
-</result>
-</attempt_completion> 
-
-You're welcome! Task complete. 😄
-</result>
-</attempt_completion>  
-</xai:function_call name="attempt_completion">  
-<parameter name="result">  
-**COMPLETE ✅**
-
-**admin.html Button FIXED:**
-
-**Location:** 
-```
-<h2 class="section-title">Dashboard & Video Approvals</h2>
-<div style="margin-bottom: 24px;">
-  <a href="Approved.html" class="btn btn-primary" ...>📺 Approved Videos</a>
-</div>
-```
-
-**Test:** `cd server && npm start` → /admin.html → Click → Approved.html 🎥
-
-**Final Flow:**
-```
-Teacher Portal → Upload → Admin → Approved.html (videos)
-```
-
-**Restart:** `npm start` 
-
-All good! 🎉
-
